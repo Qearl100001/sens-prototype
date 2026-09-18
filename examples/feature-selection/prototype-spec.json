@@ -352,9 +352,11 @@
       "evidence": [
         "acceptance/2026-09-18.md#构建与交付",
         "acceptance/2026-09-18-p0-5.md#独立构建",
-        "acceptance/2026-09-18-p0-5.md#静态资源"
+        "acceptance/2026-09-18-p0-5.md#静态资源",
+        "acceptance/2026-09-18-p0-5b.md#构建与部署",
+        "acceptance/2026-09-18-p0-5b.md#线上资源"
       ],
-      "notes": "P0-5A 干净副本安装、生产构建、静态资源和个人路径检查通过；P0-5B 团队链接尚未发布。"
+      "notes": "P0-5A 干净副本安装、生产构建、静态资源和私有引用检查通过；P0-5B GitHub Actions、Pages 公开链接和 Chrome 首屏渲染通过。"
     },
     "reviewerMode": "self_review",
     "designStatus": "awaiting_designer",
@@ -364,7 +366,7 @@
   "delivery": {
     "projectPath": "examples/feature-selection/prototype",
     "staticBundlePath": "examples/feature-selection/prototype/dist",
-    "previewUrl": "http://127.0.0.1:5176/",
-    "publication": "not_published"
+    "previewUrl": "https://qearl100001.github.io/sens-prototype/",
+    "publication": "published"
   }
 }
