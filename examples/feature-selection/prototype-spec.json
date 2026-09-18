@@ -1,0 +1,370 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "feature-selection",
+  "title": "P0-4 实体筛选特征模板创建页与特征值单选/多选试点",
+  "stage": "checked",
+  "mode": "incremental",
+  "objective": "以用户提供的现网截图恢复创建模板页面基础结构与添加特征抽屉，并验证特征值抽屉配置单选或多选、切换确认、其他值互斥，以及保存后的单选应用效果。",
+  "sources": [
+    {
+      "id": "prd-1",
+      "kind": "prd",
+      "location": "用户提供的 sdh137+_实体筛选特征模板+特征分群PRD.md，§7.2、§7.4.1",
+      "usage": "§7.2 与 §7.4.1：单选、多选、互斥、切换确认与应用效果。"
+    },
+    {
+      "id": "screenshots-1",
+      "kind": "screenshot",
+      "location": "用户于 2026-09-17 提供的创建模板页、添加特征空态和已选态三张截图",
+      "usage": "作为顶部导航、无侧边栏页面骨架、下钻标题栏、基础信息、模板详情与添加特征双栏抽屉的视觉基准；交互规则仍以 PRD 为准。"
+    },
+    {
+      "id": "screenshots-2",
+      "kind": "screenshot",
+      "location": "用户于 2026-09-17 提供的已选特征配置态截图",
+      "usage": "作为未配置提示、运算符与特征值、选择方式、区间平铺四种业务行及正文排版的视觉基准。"
+    },
+    {
+      "id": "sens-1",
+      "kind": "sens_rule",
+      "location": "@sens/prototype-kit 0.1.0-p0.6 catalog and bundled rules",
+      "usage": "Product Shell、Top Navigation、Page Title Bar、Section Title、Drawer、Form、Select、Input、Textarea、Search、Empty State、Radio、Checkbox、Popover 与 Button 的正式组件规则。"
+    },
+    {
+      "id": "recording-1",
+      "kind": "screen_recording",
+      "location": "外部资料：测试 创建模版.mov（不随仓库分发）",
+      "usage": "作为添加特征、保存加载、添加特征值、放弃确认、区间或离散设置、行内结果与悬停操作的现有产品行为基准。"
+    }
+  ],
+  "scope": {
+    "change": [
+      "创建模板页恢复为截图中的无侧边栏产品壳、下钻标题栏、基础信息和模板详情结构",
+      "添加特征双栏抽屉支持搜索、展开、选择、清空与保存回填",
+      "已选特征按配置状态展示四种业务行，并统一使用正文排版",
+      "按录屏补齐保存加载、放弃确认、特征值双栏选择、行内展开收起和数值设置",
+      "特征值抽屉增加应用选择方式",
+      "多选切单选确认",
+      "保存后的单选应用展示"
+    ],
+    "preserve": [
+      "PRD 中的特征值单选/多选、切换确认、其他值互斥和应用态规则"
+    ],
+    "excluded": [
+      "仅看已配置",
+      "模板详情页与完整历史分群兼容流程",
+      "真实保存服务"
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "description": "应用选择方式默认多选；单选应用态最多选择一个候选值。",
+      "basis": "explicit",
+      "sourceRefs": [
+        "prd-1"
+      ]
+    },
+    {
+      "id": "r2",
+      "description": "多选切换为单选时显示切换确认。",
+      "basis": "explicit",
+      "sourceRefs": [
+        "prd-1"
+      ]
+    },
+    {
+      "id": "r3",
+      "description": "单选与其他互斥；切换为单选时关闭其他值展示并将其禁用，提示仅多选支持。",
+      "basis": "explicit",
+      "sourceRefs": [
+        "prd-1"
+      ]
+    },
+    {
+      "id": "r4",
+      "description": "保存为单选后，应用态使用 Radio；选择 No 自动取消 Yes，不允许同时保存两个值。",
+      "basis": "explicit",
+      "sourceRefs": [
+        "prd-1"
+      ]
+    },
+    {
+      "id": "r5",
+      "description": "已选特征按字段配置状态展示未配置提示、运算符与特征值、区间平铺、选择方式四种形态；字段名和配置内容使用 14px/22px/regular 正文排版，不使用标题字重。",
+      "basis": "explicit",
+      "sourceRefs": [
+        "screenshots-2",
+        "sens-1"
+      ]
+    },
+    {
+      "id": "r6",
+      "description": "添加特征与添加特征值均支持双栏选择、放弃确认和保存回填；添加特征保存时展示加载状态。",
+      "basis": "explicit",
+      "sourceRefs": ["recording-1", "sens-1"]
+    },
+    {
+      "id": "r7",
+      "description": "数值型特征支持使用区间或离散数字设置，并把保存结果展示为行内复选项。",
+      "basis": "explicit",
+      "sourceRefs": ["recording-1", "sens-1"]
+    }
+  ],
+  "pages": [
+    {
+      "id": "template",
+      "name": "创建模板、添加特征及特征值配置",
+      "regions": [
+        "create-page",
+        "feature-picker",
+        "drawer",
+        "application-preview"
+      ],
+      "states": [
+        {
+          "id": "editing-multiple",
+          "description": "编辑特征值，多选模式"
+        },
+        {
+          "id": "confirm-single",
+          "description": "确认切换为单选"
+        },
+        {
+          "id": "editing-single",
+          "description": "编辑特征值，单选模式"
+        },
+        {
+          "id": "saved-preview",
+          "description": "保存后展示应用选择方式"
+        },
+        {
+          "id": "application-single",
+          "description": "应用态 Radio 在 Yes 与 No 之间互斥切换"
+        }
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "switch",
+      "pageId": "template",
+      "fromState": "editing-multiple",
+      "trigger": "选择单选",
+      "toState": "confirm-single",
+      "effect": "显示切换影响及确认/取消操作。",
+      "requirementRefs": [
+        "r2"
+      ]
+    },
+    {
+      "id": "cancel",
+      "pageId": "template",
+      "fromState": "confirm-single",
+      "trigger": "取消切换",
+      "toState": "editing-multiple",
+      "effect": "保持多选模式，按钮文案使用 PRD 正文的“暂不切换”。",
+      "requirementRefs": [
+        "r2"
+      ]
+    },
+    {
+      "id": "confirm",
+      "pageId": "template",
+      "fromState": "confirm-single",
+      "trigger": "确认切换",
+      "toState": "editing-single",
+      "effect": "应用选择方式变为单选；其他值展示关闭并禁用。",
+      "requirementRefs": [
+        "r2",
+        "r3"
+      ]
+    },
+    {
+      "id": "save",
+      "pageId": "template",
+      "fromState": "editing-single",
+      "trigger": "保存抽屉",
+      "toState": "saved-preview",
+      "effect": "关闭抽屉并按 Radio 形态展示模板应用效果。",
+      "requirementRefs": [
+        "r1",
+        "r4"
+      ]
+    },
+    {
+      "id": "select-no",
+      "pageId": "template",
+      "fromState": "saved-preview",
+      "trigger": "应用态选择 No",
+      "toState": "application-single",
+      "effect": "No 选中，Yes 自动取消选中。",
+      "requirementRefs": [
+        "r4"
+      ]
+    }
+  ],
+  "validations": [],
+  "designSystem": {
+    "name": "Sens",
+    "version": "0.1.0-p0.6",
+    "status": "available",
+    "assetLocation": "vendor/sens-prototype-kit-0.1.0-p0.6.tgz",
+    "mappings": [
+      {
+        "pageId": "template",
+        "region": "create-page",
+        "kind": "layout",
+        "exportName": "SensProductShell",
+        "variant": "vertical without side navigation",
+        "ruleSourceRefs": ["sens-1"],
+        "status": "verified"
+      },
+      {
+        "pageId": "template",
+        "region": "drawer",
+        "kind": "component",
+        "exportName": "SensDrawer + SensForm + SensRadioGroup + SensCheckboxGroup + SensPopover",
+        "variant": "large drawer with confirm popover",
+        "ruleSourceRefs": ["sens-1"],
+        "status": "verified"
+      },
+      {
+        "pageId": "template",
+        "region": "application-preview",
+        "kind": "component",
+        "exportName": "SensRadioGroup",
+        "variant": "horizontal interactive",
+        "ruleSourceRefs": ["sens-1"],
+        "status": "verified"
+      }
+    ],
+    "gaps": [
+      "Sens 当前没有正式导出的 Tree 或 Transfer 复合组件；添加特征区域由 SearchInput、SensCheckbox、SensEmptyState、SensButton 等正式基础组件组成业务组合，不宣称为 Sens Tree/Transfer",
+      "设计师尚未审核当前业务组合与用户截图的最终像素级差异"
+    ]
+  },
+  "simulation": {
+    "dataSource": "mock",
+    "scenarios": [
+      {
+        "id": "yes-no",
+        "description": "Yes/No候选值，用于演示应用态单选。",
+        "trigger": "点击编辑值，在抽屉中将应用选择方式由多选切换为单选并保存。",
+        "reset": "刷新页面恢复默认多选状态。"
+      }
+    ],
+    "persistence": "memory"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "question": "已勾选其他时切换单选，如何处理原勾选？",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "PRD §8.2 已明确：历史分群存在多个已选值时，按单选方式进入编辑默认全部不选，由用户重新选择。",
+      "sourceRefs": [
+        "prd-1"
+      ]
+    },
+    {
+      "id": "q2",
+      "question": "现有页面及抽屉上下文依据是什么？",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "使用 PRD 仓库同名 Demo 的现有产品壳、特征组和双栏抽屉作为可见上下文；新规则仍以 PRD 为准。",
+      "sourceRefs": []
+    },
+    {
+      "id": "q3",
+      "question": "本示例裁剪范围是否作为第一轮试点范围？",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "第一轮仅实现特征值抽屉、切换确认、其他互斥与单选应用效果；显示设置和仅看已配置后置。",
+      "sourceRefs": []
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "a1",
+      "requirementRefs": [
+        "r1"
+      ],
+      "description": "应用态选择No后，Yes不再选中。"
+    },
+    {
+      "id": "a2",
+      "requirementRefs": [
+        "r2"
+      ],
+      "description": "取消切换不会改变原多选模式。"
+    },
+    {
+      "id": "a3",
+      "requirementRefs": [
+        "r2",
+        "r3"
+      ],
+      "description": "确认切换后其他值展示关闭且禁用，并提示仅多选支持。"
+    },
+    {
+      "id": "a4",
+      "requirementRefs": [
+        "r5"
+      ],
+      "description": "四种已选特征业务行均可见；字段名计算样式为 14px/22px/400，1280 宽度下区间行的“更多”完整可见且页面无横向溢出。"
+    },
+    {
+      "id": "a5",
+      "requirementRefs": ["r6"],
+      "description": "添加特征与特征值抽屉均能选择、放弃确认和保存回填；添加特征保存按钮在提交期间进入加载禁用态。"
+    },
+    {
+      "id": "a6",
+      "requirementRefs": ["r7"],
+      "description": "数值设置可切换区间或离散数字，保存后行内展示对应复选项。"
+    }
+  ],
+  "review": {
+    "requirement": {
+      "status": "pass",
+      "evidence": [
+        "acceptance/2026-09-18.md#需求与范围"
+      ],
+      "notes": "PRD §7.2、§7.4.1 的本轮范围已落入可交互原型；显示设置与仅看已配置仍明确排除。"
+    },
+    "sens": {
+      "status": "pass",
+      "evidence": [
+        "acceptance/2026-09-18.md#sens-资产与视觉"
+      ],
+      "notes": "业务源码仅从 @sens/prototype-kit 0.1.0-p0.6 消费正式出口；SensIcon 与 SensInputNumber 已替换文字图标和自制数字框；Tree/Transfer 复合组件缺口已明确记录，设计师视觉审核仍为 awaiting_designer。"
+    },
+    "interaction": {
+      "status": "pass",
+      "evidence": [
+        "acceptance/2026-09-18.md#playwright-交互验收"
+      ],
+      "notes": "添加特征、保存加载、放弃确认、特征值双栏选择、区间或离散设置、单选多选和行内回填均已通过浏览器 Playwright 验收。"
+    },
+    "delivery": {
+      "status": "pass",
+      "evidence": [
+        "acceptance/2026-09-18.md#构建与交付",
+        "acceptance/2026-09-18-p0-5.md#独立构建",
+        "acceptance/2026-09-18-p0-5.md#静态资源"
+      ],
+      "notes": "P0-5A 干净副本安装、生产构建、静态资源和个人路径检查通过；P0-5B 团队链接尚未发布。"
+    },
+    "reviewerMode": "self_review",
+    "designStatus": "awaiting_designer",
+    "designerDecision": null,
+    "artifactRevision": "p0.6-2026-09-18-recording"
+  },
+  "delivery": {
+    "projectPath": "examples/feature-selection/prototype",
+    "staticBundlePath": "examples/feature-selection/prototype/dist",
+    "previewUrl": "http://127.0.0.1:5176/",
+    "publication": "not_published"
+  }
+}

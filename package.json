@@ -1,0 +1,22 @@
+{
+  "name": "sens-prototype",
+  "private": true,
+  "version": "0.1.0-p0.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5175 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4175 --strictPort"
+  },
+  "dependencies": {
+    "@sens/prototype-kit": "file:vendor/sens-prototype-kit-0.1.0-p0.3.tgz",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.4.5",
+    "vite": "5.4.21"
+  }
+}

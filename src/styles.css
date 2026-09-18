@@ -1,0 +1,25 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.prototype-content {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  background: var(--sens-product-shell-page-background, #f6f7f9);
+}
+
+.prototype-card {
+  min-height: 96px;
+  padding: 16px;
+  background: var(--sens-product-shell-surface, #fff);
+  border-radius: var(--sens-product-shell-content-radius, 8px);
+}
+
+.prototype-card p {
+  margin: 8px 0 0;
+}
