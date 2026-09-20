@@ -3,7 +3,7 @@ import {
   SearchInput, SensButton, SensCheckbox, SensDrawer, SensEmptyState, SensForm,
   SensFormItem, SensIcon, SensInput, SensInputNumber, SensPageTitleBar, SensPopover,
   SensProductShell, SensRadio, SensRadioGroup, SensSectionTitle, SensSelectDropdown,
-  SensTextArea, SensTitleBar, SensTopNavigation,
+  SensTextArea, SensTitleBar, SensTopNavigation, useSensMessage,
 } from '@sens/prototype-kit';
 
 type SelectionMode = 'single' | 'multiple';
@@ -36,6 +36,7 @@ const valueOptionsByFeature: Record<string, string[]> = {
   'ab-version': ['ab_version_1', 'ab_version_2', 'ab_version_3', 'control'],
 };
 const allCandidates = ['Yes', 'No', 'Unknown', 'Not Applicable'];
+const initialTemplateName = '实体筛选特征模板4';
 const defaultRanges = ['0 以下', '0-200', '200-400', '400-600', '600-800', '800-1000', '1000-1200', '1200-1400'];
 const featureDisplayModeById: Partial<Record<string, FeatureDisplayMode>> = {
   'app-channel': 'operator-value', 'income-level': 'operator-value', 'ab-version': 'operator-value',
@@ -50,9 +51,12 @@ const topNavigationItems = [
 const sameValues = (a: string[], b: string[]) => a.length === b.length && a.every((value) => b.includes(value));
 
 export function App() {
+  const message = useSensMessage();
   const [entity, setEntity] = useState('user');
-  const [templateName, setTemplateName] = useState('实体筛选特征模板4');
+  const [templateName, setTemplateName] = useState(initialTemplateName);
   const [remark, setRemark] = useState('');
+  const [mainAbandonOpen, setMainAbandonOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [addDrawerOpen, setAddDrawerOpen] = useState(false);
   const [normalExpanded, setNormalExpanded] = useState(false);
   const [search, setSearch] = useState('');
@@ -148,6 +152,28 @@ export function App() {
     if (configuredRanges[featureId]) return 'range-options';
     return featureDisplayModeById[featureId] ?? 'missing-range';
   };
+  const abandonTemplate = () => {
+    setEntity('user'); setTemplateName(initialTemplateName); setRemark('');
+    setAddDrawerOpen(false); setDraftFeatureIds([]); setSavedFeatureIds([]); setSavingFeatures(false);
+    setFeatureValues({}); setValueSelectionModeByFeature({}); setShowOtherByFeature({}); setExpandedValueRows([]);
+    setValueFeatureId(null); setCtmdDrawerOpen(false); setConfirmOpen(false); setSettingsFeatureId(null);
+    setSavedMode('multiple'); setDraftMode('multiple'); setSavedCandidates(['Yes', 'No']);
+    setDraftCandidates(['Yes', 'No']); setSavedShowOther(true); setDraftCtmdShowOther(true);
+    setApplicationValue('Yes'); setConfiguredRanges({ 'abtest-metric': defaultRanges });
+    setSubmitting(false); setMainAbandonOpen(false); message.destroy();
+    message.default('已放弃本次创建');
+  };
+  const submitTemplate = () => {
+    if (!templateName.trim() || savedFeatureIds.length === 0 || submitting) return;
+    setSubmitting(true);
+    const closeLoading = message.loading('创建中');
+    window.setTimeout(() => {
+      closeLoading(); setSubmitting(false);
+      const shouldFail = new URLSearchParams(window.location.search).get('submitResult') === 'failure';
+      if (shouldFail) message.warning('创建失败，请稍后重试');
+      else message.success('创建成功');
+    }, 650);
+  };
   const iconButton = (name: 'edit' | 'delete' | 'setting' | 'close', label: string, onClick?: () => void) => (
     <SensButton className="icon-action" tone="linkWeak" icon={<SensIcon name={name} sizeToken="size/icon/m" colorRole="inherit" />}
       aria-label={label} title={label} onClick={onClick} />
@@ -183,9 +209,15 @@ export function App() {
         topNavigation={<SensTopNavigation embedded activeNavLabel="标签管理" items={topNavigationItems} />}
         titleBar={<SensPageTitleBar variant="drilldown" title="创建模板"
           breadcrumbItems={[{ key: 'settings', label: '基本设置' }, { key: 'feature-template', label: '实体筛选特征模板' }, { key: 'create-template', label: '创建模板' }]}
-          onBack={() => undefined}
-          actions={<><SensButton tone="secondary">放弃</SensButton>
-            <SensButton tone="primary" disabled={!templateName.trim() || savedFeatureIds.length === 0}>提交</SensButton></>} />}>
+          onBack={() => setMainAbandonOpen(true)}
+          actions={<><SensPopover open={mainAbandonOpen} onOpenChange={setMainAbandonOpen} variant="confirm" size="small"
+            placement="bottom" align="end" title="确定放弃本次创建吗？" content="放弃后，当前填写内容和已选择特征将不会保留。"
+            actions={<><SensButton tone="dangerSecondary" onClick={abandonTemplate}>确定放弃</SensButton>
+              <SensButton tone="primary" onClick={() => setMainAbandonOpen(false)}>继续编辑</SensButton></>}>
+            <SensButton tone="secondary">放弃</SensButton>
+          </SensPopover>
+            <SensButton tone="primary" loading={submitting} disabled={!templateName.trim() || savedFeatureIds.length === 0}
+              onClick={submitTemplate}>提交</SensButton></>} />}>
         <main className="template-page">
           <section className="page-section" aria-labelledby="basic-title">
             <SensSectionTitle id="basic-title" title="基础信息" size="large" />
@@ -259,8 +291,8 @@ export function App() {
                 </div> : null}
                 <SensButton className="full-dashed-action" tone="dashed" onClick={openAddFeature}>添加特征</SensButton>
               </div>
-              <SensButton className="full-dashed-action" tone="dashed">添加特征组</SensButton>
-              <SensButton tone="dashed">添加黑名单范围</SensButton>
+              <SensButton className="full-dashed-action" tone="dashed" disabled title="当前试点暂不支持新增特征组">添加特征组</SensButton>
+              <SensButton tone="dashed" disabled title="当前试点暂不支持新增黑名单范围">添加黑名单范围</SensButton>
               <p className="helper-copy">使用模板时可以选择上述分群，将其排除在筛选结果之外</p>
             </div>
           </section>

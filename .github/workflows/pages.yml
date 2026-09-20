@@ -33,9 +33,32 @@ jobs:
         working-directory: examples/feature-selection/prototype
         run: npm ci
 
+      - name: Check Sens asset usage
+        working-directory: examples/feature-selection/prototype
+        run: npm run check:sens
+
       - name: Build prototype
         working-directory: examples/feature-selection/prototype
         run: npm run build
+
+      - name: Install Playwright browser
+        working-directory: examples/feature-selection/prototype
+        run: npx playwright install --with-deps chromium
+
+      - name: Run prototype review
+        working-directory: examples/feature-selection/prototype
+        run: npm run test:review
+
+      - name: Upload review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-selection-review
+          path: |
+            examples/feature-selection/prototype/playwright-report
+            examples/feature-selection/prototype/test-results
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

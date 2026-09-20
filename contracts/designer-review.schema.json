@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Qearl100001/sens-prototype/contracts/designer-review.schema.json",
+  "title": "Sens Prototype Designer Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "prototypeId", "artifactRevision", "decision", "categories", "findings"],
+  "properties": {
+    "schemaVersion": { "const": "0.1.0" },
+    "prototypeId": { "type": "string", "minLength": 1 },
+    "artifactRevision": { "type": "string", "minLength": 1 },
+    "reviewer": { "type": ["string", "null"] },
+    "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+    "decision": {
+      "enum": ["awaiting_designer", "approved", "approved_with_followups", "changes_requested"]
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "status", "notes"],
+        "properties": {
+          "category": { "enum": ["requirement", "sens", "visual", "interaction", "delivery"] },
+          "status": { "enum": ["pass", "fail", "not_run", "blocked"] },
+          "notes": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "description", "status"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "severity": { "enum": ["blocker", "major", "minor", "suggestion"] },
+          "page": { "type": "string" },
+          "state": { "type": "string" },
+          "description": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "owner": { "type": ["string", "null"] },
+          "status": { "enum": ["open", "resolved", "accepted"] }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

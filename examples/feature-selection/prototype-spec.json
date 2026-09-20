@@ -43,6 +43,7 @@
       "添加特征双栏抽屉支持搜索、展开、选择、清空与保存回填",
       "已选特征按配置状态展示四种业务行，并统一使用正文排版",
       "按录屏补齐保存加载、放弃确认、特征值双栏选择、行内展开收起和数值设置",
+      "补齐页面级放弃确认、提交加载、模拟成功和可重复失败反馈",
       "特征值抽屉增加应用选择方式",
       "多选切单选确认",
       "保存后的单选应用展示"
@@ -53,6 +54,8 @@
     "excluded": [
       "仅看已配置",
       "模板详情页与完整历史分群兼容流程",
+      "新增特征组",
+      "新增黑名单范围",
       "真实保存服务"
     ]
   },
@@ -109,6 +112,18 @@
       "description": "数值型特征支持使用区间或离散数字设置，并把保存结果展示为行内复选项。",
       "basis": "explicit",
       "sourceRefs": ["recording-1", "sens-1"]
+    },
+    {
+      "id": "r8",
+      "description": "页面提交必须展示加载过程和明确结果；默认模拟创建成功，使用 submitResult=failure 查询参数可重复验证创建失败。",
+      "basis": "assumed",
+      "sourceRefs": ["sens-1"]
+    },
+    {
+      "id": "r9",
+      "description": "页面返回或放弃必须二次确认；确认后重置当前创建内容并反馈结果。当前试点不支持的新增特征组和黑名单操作必须禁用，不得保留静默按钮。",
+      "basis": "assumed",
+      "sourceRefs": ["sens-1"]
     }
   ],
   "pages": [
@@ -141,6 +156,18 @@
         {
           "id": "application-single",
           "description": "应用态 Radio 在 Yes 与 No 之间互斥切换"
+        },
+        {
+          "id": "submit-success",
+          "description": "提交加载结束后显示创建成功"
+        },
+        {
+          "id": "submit-failure",
+          "description": "可重复模拟提交失败并保留当前编辑内容"
+        },
+        {
+          "id": "abandoned",
+          "description": "确认放弃后重置当前创建内容"
         }
       ]
     }
@@ -202,6 +229,33 @@
       "requirementRefs": [
         "r4"
       ]
+    },
+    {
+      "id": "submit-success",
+      "pageId": "template",
+      "fromState": "saved-preview",
+      "trigger": "点击提交",
+      "toState": "submit-success",
+      "effect": "按钮进入加载态，结束后显示“创建成功”轻提示。",
+      "requirementRefs": ["r8"]
+    },
+    {
+      "id": "submit-failure",
+      "pageId": "template",
+      "fromState": "saved-preview",
+      "trigger": "在 submitResult=failure 场景点击提交",
+      "toState": "submit-failure",
+      "effect": "按钮进入加载态，结束后显示“创建失败，请稍后重试”，并保留当前内容。",
+      "requirementRefs": ["r8"]
+    },
+    {
+      "id": "abandon-template",
+      "pageId": "template",
+      "fromState": "saved-preview",
+      "trigger": "点击返回或放弃并确认",
+      "toState": "abandoned",
+      "effect": "重置表单和已选特征，显示“已放弃本次创建”轻提示。",
+      "requirementRefs": ["r9"]
     }
   ],
   "validations": [],
@@ -252,6 +306,18 @@
         "description": "Yes/No候选值，用于演示应用态单选。",
         "trigger": "点击编辑值，在抽屉中将应用选择方式由多选切换为单选并保存。",
         "reset": "刷新页面恢复默认多选状态。"
+      },
+      {
+        "id": "submit-success",
+        "description": "默认提交成功场景。",
+        "trigger": "完成至少一个特征选择后点击提交。",
+        "reset": "刷新页面。"
+      },
+      {
+        "id": "submit-failure",
+        "description": "可重复的服务端提交失败模拟。",
+        "trigger": "使用 ?submitResult=failure 打开原型，完成至少一个特征选择后点击提交。",
+        "reset": "移除查询参数或刷新页面。"
       }
     ],
     "persistence": "memory"
@@ -323,15 +389,26 @@
       "id": "a6",
       "requirementRefs": ["r7"],
       "description": "数值设置可切换区间或离散数字，保存后行内展示对应复选项。"
+    },
+    {
+      "id": "a7",
+      "requirementRefs": ["r8"],
+      "description": "提交显示加载态；默认显示创建成功，submitResult=failure 显示创建失败且保留当前编辑内容。"
+    },
+    {
+      "id": "a8",
+      "requirementRefs": ["r9"],
+      "description": "页面返回和放弃均出现确认；确认后内容重置。新增特征组和黑名单范围保持禁用，不存在静默可点击按钮。"
     }
   ],
   "review": {
     "requirement": {
       "status": "pass",
       "evidence": [
-        "acceptance/2026-09-18.md#需求与范围"
+        "acceptance/2026-09-18.md#需求与范围",
+        "acceptance/2026-09-20-p0-6b.md#需求"
       ],
-      "notes": "PRD §7.2、§7.4.1 的本轮范围已落入可交互原型；显示设置与仅看已配置仍明确排除。"
+      "notes": "PRD §7.2、§7.4.1 的本轮范围已落入可交互原型；页面提交、放弃反馈和当前试点延期控件已形成明确状态；显示设置与仅看已配置仍明确排除。"
     },
     "sens": {
       "status": "pass",
@@ -343,9 +420,10 @@
     "interaction": {
       "status": "pass",
       "evidence": [
-        "acceptance/2026-09-18.md#playwright-交互验收"
+        "acceptance/2026-09-18.md#playwright-交互验收",
+        "acceptance/2026-09-20-p0-6b.md#交互"
       ],
-      "notes": "添加特征、保存加载、放弃确认、特征值双栏选择、区间或离散设置、单选多选和行内回填均已通过浏览器 Playwright 验收。"
+      "notes": "添加特征、保存加载、页面与抽屉放弃确认、提交成功和可重复失败、特征值双栏选择、区间或离散设置、单选多选和行内回填均已通过浏览器 Playwright 验收；不在试点范围的按钮已禁用。"
     },
     "delivery": {
       "status": "pass",
@@ -354,14 +432,15 @@
         "acceptance/2026-09-18-p0-5.md#独立构建",
         "acceptance/2026-09-18-p0-5.md#静态资源",
         "acceptance/2026-09-18-p0-5b.md#构建与部署",
-        "acceptance/2026-09-18-p0-5b.md#线上资源"
+        "acceptance/2026-09-18-p0-5b.md#线上资源",
+        "acceptance/2026-09-20-p0-6b.md#交付"
       ],
-      "notes": "P0-5A 干净副本安装、生产构建、静态资源和私有引用检查通过；P0-5B GitHub Actions、Pages 公开链接和 Chrome 首屏渲染通过。"
+      "notes": "P0-5A/P0-5B 独立交付与公开链接证据继续有效；P0-6B 本地静态检查、生产构建和 Playwright 门禁已通过，公开站点尚未更新到本轮版本。"
     },
     "reviewerMode": "self_review",
     "designStatus": "awaiting_designer",
     "designerDecision": null,
-    "artifactRevision": "p0.6-2026-09-18-recording"
+    "artifactRevision": "p0.6-p0-6b-2026-09-20"
   },
   "delivery": {
     "projectPath": "examples/feature-selection/prototype",
