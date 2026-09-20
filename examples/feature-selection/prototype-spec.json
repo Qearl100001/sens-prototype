@@ -435,7 +435,7 @@
         "acceptance/2026-09-18-p0-5b.md#线上资源",
         "acceptance/2026-09-20-p0-6b.md#交付"
       ],
-      "notes": "P0-5A/P0-5B 独立交付与公开链接证据继续有效；P0-6B 本地静态检查、生产构建和 Playwright 门禁已通过，公开站点尚未更新到本轮版本。"
+      "notes": "P0-5A/P0-5B 独立交付证据继续有效；P0-6B 本地与 GitHub Actions 的静态检查、生产构建和 Playwright 门禁均已通过，公开站点已更新并验证新资源。"
     },
     "reviewerMode": "self_review",
     "designStatus": "awaiting_designer",
