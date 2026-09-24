@@ -22,8 +22,11 @@ description: 检查 Sens PM 原型的需求覆盖、设计系统复用、交互�
 ### Sens
 
 - 页面使用固定版本 `@sens/prototype-kit` 的公开组件和 Product Shell。
+- `designSystem.templateRefs`、`compositeRefs` 必须存在于当前安装包的 `catalog.json`，并与页面层级一致。
+- 检查顺序为页面样板、复合组件、基础组件、Token；不能用“使用了 Token”替代对已有样板或组件的真实调用。
 - 业务代码不直接导入 antd，不复制 Sens 组件，不以自定义 CSS 覆盖基础组件状态。
 - 组件映射、缺口和例外与实际代码一致。
+- 已登记资产若被业务页面重新实现，Sens 检查直接判定为 `fail`；公开出口确实缺失时应判 `blocked`，不能将本地适配层标记为 `verified`。
 
 ### 交互
 

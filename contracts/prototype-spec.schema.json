@@ -73,6 +73,9 @@
         "excluded"
       ]
     },
+    "informationArchitecture": {
+      "$ref": "#/$defs/informationArchitecture"
+    },
     "requirements": {
       "type": "array",
       "items": {
@@ -124,6 +127,14 @@
             "null"
           ],
           "minLength": 1
+        },
+        "templateRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetUsage" }
+        },
+        "compositeRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetUsage" }
         },
         "mappings": {
           "type": "array",
@@ -390,6 +401,42 @@
     "delivery"
   ],
   "$defs": {
+    "informationArchitecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "PM 确认的页面层级、入口和返回关系。新增或改动页面在进入 ready 前必须填写。",
+      "properties": {
+        "product": { "type": "string", "minLength": 1 },
+        "sideNavigationPath": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "pageLevel": { "enum": ["landing", "drilldown"] },
+        "entryPoint": { "enum": ["side_navigation", "card", "table", "action", "direct_link", "other"] },
+        "parentPage": { "type": ["string", "null"] },
+        "entryLabel": { "type": "string", "minLength": 1 },
+        "returnTarget": { "type": "string", "minLength": 1 },
+        "deepLinkPolicy": { "type": "string", "minLength": 1 },
+        "sourceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "required": ["product", "sideNavigationPath", "pageLevel", "entryPoint", "parentPage", "entryLabel", "returnTarget", "deepLinkPolicy", "sourceRefs"]
+    },
+    "assetUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pageId": { "type": "string", "minLength": 1 },
+        "assetId": { "type": "string", "minLength": 1 },
+        "pageLevel": { "enum": ["landing", "drilldown"] },
+        "purpose": { "type": "string", "minLength": 1 }
+      },
+      "required": ["pageId", "assetId", "purpose"]
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,

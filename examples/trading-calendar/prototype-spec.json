@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "trading-calendar",
+  "title": "交易日历管理",
+  "stage": "checked",
+  "mode": "module",
+  "objective": "使用固定版本 SensD 资产和 Design Token 构建可评审的交易日历管理原型，验证当前设计系统面对全新日历场景时的组合能力与组件缺口。",
+  "sources": [
+    {
+      "id": "SRC-PRD",
+      "kind": "prd",
+      "location": "external:【SA】交易日历管理与业务集成 PRD.md",
+      "usage": "业务目标、初始化、月年视图、编辑、上传、通知、权限与校验规则。"
+    },
+    {
+      "id": "SRC-REF",
+      "kind": "screenshot",
+      "location": "conversation:feishu-calendar-month-reference",
+      "usage": "仅参考月历的信息结构、时间导航和七列网格，不复制其品牌样式。"
+    },
+    {
+      "id": "SRC-SENS",
+      "kind": "sens_rule",
+      "location": "@sens/prototype-kit@0.1.0-p0.8",
+      "usage": "产品壳、导航、标题栏、按钮、表单、抽屉、浮层、消息、图标与 Design Token 来源。"
+    },
+    {
+      "id": "SRC-DECISION",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-22",
+      "usage": "确认先实现 SBP 交易日历管理；全部样式由现有组件、布局规范、基础样式 Token 搭建。"
+    },
+    {
+      "id": "SRC-STRUCTURE",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-23-information-architecture",
+      "usage": "确认交易日历不是侧导航项，而是平台管理的项目管理→基本设置中的入口卡片下钻页；PM 后续必须提供页面层级、入口和返回关系。"
+    },
+    {
+      "id": "SRC-FIGMA-CARD",
+      "kind": "figma",
+      "location": "figma-library:🦄 设计系统_v2.1（神策绿）/component-set:入口类卡片",
+      "usage": "Figma 设计系统检索确认存在正式「入口类卡片」组件集；P0-7 固定包已导出对应 SensEntryCard。"
+    },
+    {
+      "id": "SRC-SHELL-LAYOUT",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-23-product-shell-layout",
+      "usage": "确认产品壳硬规则：顶角 10px；下钻页无侧导航；页面背景通栏铺满；白底无返回标题栏与内容间距 0；浅绿色带返回标题栏与白色内容间距 16px。"
+    },
+    {
+      "id": "SRC-FIGMA-ALERT",
+      "kind": "figma",
+      "location": "figma:IBBF40Lst6uPPJf70pi0bh/node:4849-14959",
+      "usage": "通知抽屉顶部通栏信息使用正式 SensAlert：14/22 正文、主文字色、16px 图标、12px 水平内边距、4px 圆角和语义浅底描边。"
+    },
+    {
+      "id": "SRC-FIGMA-UPLOAD-ALERT",
+      "kind": "figma",
+      "location": "figma:IBBF40Lst6uPPJf70pi0bh/node:4908-16163",
+      "usage": "批量上传抽屉顶部使用 SensAlert 提醒类型：浅黄背景与描边、14/22 标题、12/18 辅助文案、16px 警告图标、12px 水平与 7px 垂直内边距、4px 圆角。"
+    }
+  ],
+  "scope": {
+    "change": [
+      "新增平台管理基本设置入口页与交易日历下钻页，并使用标准 Product Shell。",
+      "实现月视图、年视图、日期状态、备注、今天及跨月日期状态。",
+      "实现初始化、通知配置、单日编辑、批量编辑和批量上传的模拟主路径。",
+      "记录日历复合组件缺口并使用 SensD Token 在当前需求内组合。"
+    ],
+    "preserve": [
+      "固定版本 @sens/prototype-kit 的公开 API 和既有组件行为。",
+      "SensD 的 24px 页面留白、标题栏操作、抽屉、表单和反馈规则。",
+      "PRD 对交易日与非交易日的业务语义。"
+    ],
+    "excluded": [
+      "SDH 标签与分群完整创建页面。",
+      "SA 分析模型的完整交易日集成页面。",
+      "虚拟事件属性管理和完整操作日志页面。",
+      "真实 Excel 解析、通知发送、API、权限和 License 服务。",
+      "修改或发布上游 SensD 正式组件。"
+    ]
+  },
+  "informationArchitecture": {
+    "product": "平台管理",
+    "sideNavigationPath": ["项目管理", "基本设置"],
+    "pageLevel": "drilldown",
+    "entryPoint": "card",
+    "parentPage": "基本设置",
+    "entryLabel": "交易日历",
+    "returnTarget": "基本设置",
+    "deepLinkPolicy": "直接访问交易日历时，侧导航仍选中基本设置，并保留返回上级页的路径。",
+    "sourceRefs": ["SRC-STRUCTURE"]
+  },
+  "requirements": [
+    { "id": "TC-R01", "description": "页面使用平台管理 Product Shell，侧导航选中项目管理→基本设置，交易日历不作为侧导航项。", "basis": "confirmed", "sourceRefs": ["SRC-SENS", "SRC-STRUCTURE"] },
+    { "id": "TC-R02", "description": "默认展示当前月份的七列月历，可切换上一月、下一月和回到今天。", "basis": "explicit", "sourceRefs": ["SRC-PRD", "SRC-REF"] },
+    { "id": "TC-R03", "description": "支持月视图与年视图切换；年视图展示十二个月并可进入对应月。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R04", "description": "日期单元格展示日期、交易日状态和可选备注，并区分今天与非本月日期。", "basis": "explicit", "sourceRefs": ["SRC-PRD", "SRC-REF"] },
+    { "id": "TC-R05", "description": "交易日、非交易日、今天、辅助和禁用状态全部使用 SensD 语义 Token。", "basis": "confirmed", "sourceRefs": ["SRC-SENS", "SRC-DECISION"] },
+    { "id": "TC-R06", "description": "首次未初始化时自动打开通知配置；暂不配置后保留警告并禁用编辑和上传。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R07", "description": "通知配置至少完成一种上传提醒渠道，保存后解锁编辑和上传。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R08", "description": "点击单个日期打开编辑抽屉，日期只读，状态可切换，备注最多 200 字。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R09", "description": "修改历史日期状态时进行二次确认，保存后刷新日历并反馈成功。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R10", "description": "批量编辑支持添加、删除日期范围并统一设置状态和备注。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R11", "description": "批量上传覆盖模板下载、文件格式错误、内容错误、校验通过和导入成功状态。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R12", "description": "没有管理权限时隐藏管理操作，但仍允许查看日历。", "basis": "explicit", "sourceRefs": ["SRC-PRD"] },
+    { "id": "TC-R13", "description": "在小于 1280px 的桌面窗口中保留 24px 页面留白，不压缩为更小值。", "basis": "confirmed", "sourceRefs": ["SRC-SENS", "SRC-DECISION"] },
+    { "id": "TC-R14", "description": "业务层不直接导入 antd，不复制 SensD 组件，不使用 hex、rgba、.ant-* 覆盖或 !important。", "basis": "confirmed", "sourceRefs": ["SRC-SENS", "SRC-DECISION"] },
+    { "id": "TC-R15", "description": "基本设置落地页使用 SensD 设计系统的「入口类卡片」模式，点击交易日历卡片进入下钻页，下钻页可返回基本设置并支持浏览器前进后退。", "basis": "confirmed", "sourceRefs": ["SRC-STRUCTURE", "SRC-FIGMA-CARD", "SRC-SENS"] },
+    { "id": "TC-R16", "description": "产品壳严格区分落地页与下钻页：落地页保留侧导航且白色标题栏与内容间距为 0；下钻页隐藏侧导航并使用浅绿色带返回标题栏，白色内容区顶部间距为 16px；壳体顶角为 10px，内容背景铺满页面。", "basis": "confirmed", "sourceRefs": ["SRC-SHELL-LAYOUT", "SRC-SENS"] },
+    { "id": "TC-R17", "description": "交易日历核心区域参考飞书月历的信息层级，并按 SensD 规则实现：工具栏、图例与月份统计、星期栏、按月份实际占用的五或六周网格、今天、跨月日期及交易状态均使用既有 Design Token。", "basis": "confirmed", "sourceRefs": ["SRC-REF", "SRC-SENS", "SRC-DECISION"] },
+    { "id": "TC-R18", "description": "单日编辑、批量编辑、批量上传和通知配置统一使用正式 SensDrawer 与标题栏：小/中抽屉遵守响应式宽度，内容区上 16px、左右及下 24px；上传区标题为 14/22、辅助文案为 12/18，顶部使用 SensAlert 的提醒类型；通知抽屉的标题、标签、值和 Alert 正文统一为 14/22；二级信息组间距为 40px；状态反馈使用语义图标与 Token，轻量二次确认锚定触发按钮并使用小按钮。", "basis": "confirmed", "sourceRefs": ["SRC-SENS", "SRC-FIGMA-ALERT", "SRC-FIGMA-UPLOAD-ALERT", "SRC-DECISION"] }
+  ],
+  "pages": [
+    {
+      "id": "TC-P00",
+      "name": "基本设置",
+      "regions": ["Product Shell", "页面标题栏", "设置分组", "入口类卡片"],
+      "states": [
+        { "id": "basic-settings-landing", "description": "项目管理下的基本设置落地页，交易日历作为通用分组中的入口卡片。" }
+      ]
+    },
+    {
+      "id": "TC-P01",
+      "name": "交易日历管理",
+      "regions": ["Product Shell", "页面标题栏", "初始化提示", "时间导航", "状态图例", "月视图", "年视图", "业务抽屉"],
+      "states": [
+        { "id": "calendar-month", "description": "已初始化的月视图默认态。" },
+        { "id": "calendar-year", "description": "十二个月的年视图。" },
+        { "id": "calendar-uninitialized", "description": "未完成通知配置，显示警告且管理操作禁用。" },
+        { "id": "single-edit", "description": "编辑单个日期。" },
+        { "id": "batch-edit", "description": "编辑多个日期范围。" },
+        { "id": "batch-upload", "description": "批量上传及校验状态。" },
+        { "id": "notification-config", "description": "通知配置详情态和编辑态。" }
+      ]
+    }
+  ],
+  "interactions": [
+    { "id": "TC-I00", "pageId": "TC-P00", "fromState": "basic-settings-landing", "trigger": "点击交易日历入口卡片", "toState": "calendar-month", "effect": "进入交易日历下钻页，侧导航继续选中基本设置。", "requirementRefs": ["TC-R01", "TC-R15"] },
+    { "id": "TC-I01", "pageId": "TC-P01", "fromState": "calendar-month", "trigger": "点击上一月、下一月或今天", "toState": "calendar-month", "effect": "更新月份并重新生成七列日历。", "requirementRefs": ["TC-R02"] },
+    { "id": "TC-I02", "pageId": "TC-P01", "fromState": "calendar-month", "trigger": "点击年视图", "toState": "calendar-year", "effect": "展示当年十二个月。", "requirementRefs": ["TC-R03"] },
+    { "id": "TC-I03", "pageId": "TC-P01", "fromState": "calendar-year", "trigger": "点击月份", "toState": "calendar-month", "effect": "进入所选月份。", "requirementRefs": ["TC-R03"] },
+    { "id": "TC-I04", "pageId": "TC-P01", "fromState": "calendar-month", "trigger": "点击日期", "toState": "single-edit", "effect": "打开单日编辑抽屉。", "requirementRefs": ["TC-R08"] },
+    { "id": "TC-I05", "pageId": "TC-P01", "fromState": "single-edit", "trigger": "保存历史日期状态变化", "toState": "single-edit", "effect": "显示二次确认，确认后更新日历并关闭抽屉。", "requirementRefs": ["TC-R09"] },
+    { "id": "TC-I06", "pageId": "TC-P01", "fromState": "calendar-uninitialized", "trigger": "完成有效通知配置", "toState": "calendar-month", "effect": "关闭警告并解锁编辑和上传。", "requirementRefs": ["TC-R06", "TC-R07"] },
+    { "id": "TC-I07", "pageId": "TC-P01", "fromState": "batch-upload", "trigger": "选择不同名称的模拟 Excel 文件", "toState": "batch-upload", "effect": "稳定进入格式错误、内容错误或校验通过状态。", "requirementRefs": ["TC-R11"] },
+    { "id": "TC-I08", "pageId": "TC-P01", "fromState": "calendar-month", "trigger": "点击返回、基本设置面包屑或浏览器后退", "toState": "basic-settings-landing", "effect": "返回基本设置落地页，保留侧导航上下文。", "requirementRefs": ["TC-R15"] }
+  ],
+  "validations": [
+    { "id": "TC-V01", "pageId": "TC-P01", "field": "单日备注", "rule": "最多 200 字", "timing": "输入与保存", "feedback": "计数并显示字段错误。", "requirementRefs": ["TC-R08"] },
+    { "id": "TC-V02", "pageId": "TC-P01", "field": "批量日期范围", "rule": "至少存在一个完整范围且开始日期不晚于结束日期", "timing": "提交", "feedback": "字段标红并阻止提交。", "requirementRefs": ["TC-R10"] },
+    { "id": "TC-V03", "pageId": "TC-P01", "field": "通知配置", "rule": "上传提醒至少存在一种完整有效渠道", "timing": "保存", "feedback": "保留抽屉并显示错误。", "requirementRefs": ["TC-R07"] },
+    { "id": "TC-V04", "pageId": "TC-P01", "field": "上传文件", "rule": "仅接受完整自然年的 xlsx 或 xls 模拟文件", "timing": "选择文件", "feedback": "展示格式、完整性、内容错误或校验通过状态。", "requirementRefs": ["TC-R11"] }
+  ],
+  "designSystem": {
+    "name": "Sens",
+    "version": "@sens/prototype-kit@0.1.0-p0.8",
+    "status": "available",
+    "assetLocation": "vendor/sens-prototype-kit-0.1.0-p0.8.tgz",
+    "templateRefs": [
+      { "pageId": "TC-P00", "assetId": "product-shell.t-landing", "pageLevel": "landing", "purpose": "基本设置落地页产品壳。" },
+      { "pageId": "TC-P00", "assetId": "card.entry-settings", "pageLevel": "landing", "purpose": "按分组展示可下钻的设置入口。" },
+      { "pageId": "TC-P01", "assetId": "product-shell.vertical-drilldown", "pageLevel": "drilldown", "purpose": "无侧导航的交易日历下钻页。" }
+    ],
+    "compositeRefs": [
+      { "pageId": "TC-P00", "assetId": "product-shell", "purpose": "统一落地页结构、滚动与标题栏。" },
+      { "pageId": "TC-P00", "assetId": "product-shell-side-navigation", "purpose": "承载平台管理分组侧导航。" },
+      { "pageId": "TC-P01", "assetId": "product-shell", "purpose": "统一下钻页结构、滚动与标题栏。" }
+    ],
+    "mappings": [
+      { "pageId": "TC-P00", "region": "页面骨架", "kind": "layout", "exportName": "SensProductShell", "variant": "t", "ruleSourceRefs": ["SRC-SENS", "SRC-STRUCTURE"], "status": "verified" },
+      { "pageId": "TC-P00", "region": "侧导航", "kind": "component", "exportName": "ProductShellSideNavigation", "variant": "docked-grouped", "ruleSourceRefs": ["SRC-SENS", "SRC-STRUCTURE"], "status": "verified" },
+      { "pageId": "TC-P00", "region": "分组标题", "kind": "component", "exportName": "SensSectionTitle", "variant": "general-large", "ruleSourceRefs": ["SRC-FIGMA-CARD", "SRC-SENS"], "status": "verified" },
+      { "pageId": "TC-P00", "region": "入口卡片", "kind": "component", "exportName": "SensEntryCard", "variant": "small", "ruleSourceRefs": ["SRC-FIGMA-CARD", "SRC-SENS", "SRC-STRUCTURE"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "页面骨架", "kind": "layout", "exportName": "SensProductShell", "variant": "vertical", "ruleSourceRefs": ["SRC-SENS", "SRC-STRUCTURE"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "标题栏", "kind": "component", "exportName": "SensPageTitleBar", "variant": "drilldown", "ruleSourceRefs": ["SRC-SENS", "SRC-STRUCTURE"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "操作", "kind": "component", "exportName": "SensButton", "variant": "primary-secondary-tertiary", "ruleSourceRefs": ["SRC-SENS"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "编辑面板", "kind": "component", "exportName": "SensDrawer", "variant": "small-medium", "ruleSourceRefs": ["SRC-SENS"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "表单", "kind": "component", "exportName": "SensForm", "variant": "vertical-horizontal", "ruleSourceRefs": ["SRC-SENS"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "轻量确认", "kind": "component", "exportName": "SensPopover", "variant": "confirm-small", "ruleSourceRefs": ["SRC-SENS"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "批量上传通栏提醒", "kind": "component", "exportName": "SensAlert", "variant": "info-with-description", "ruleSourceRefs": ["SRC-SENS", "SRC-FIGMA-UPLOAD-ALERT"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "通知抽屉通栏信息", "kind": "component", "exportName": "SensAlert", "variant": "default", "ruleSourceRefs": ["SRC-SENS", "SRC-FIGMA-ALERT"], "status": "verified" },
+      { "pageId": "TC-P01", "region": "日历复合区域", "kind": "component", "exportName": "TradingCalendarView", "variant": "requirement-local-token-composition", "ruleSourceRefs": ["SRC-PRD", "SRC-REF", "SRC-SENS", "SRC-DECISION"], "status": "verified" }
+    ],
+    "gaps": [
+      "SensD 暂无正式月/年交易日历复合组件；本需求使用现有 Token 和控件组合 TradingCalendarView。",
+      "SensD 暂无日期范围编辑器；原型以 SensInput 的 date 类型组合验证交互。",
+      "SensD 固定资产中暂无正式 File Upload / Upload Dragger 组件；当前上传框仅保留需求验证所需的本地交互与 Token 组合，视觉不视为通过。候选 TC-S03 需补齐拖拽、文件选择、上传状态、错误状态和只读结果规则，正式组件进入固定包后替换当前实现。",
+      "固定包内存在 SensTips 类型文件但未从公开入口导出；日期备注与禁用原因暂使用原生 title，不导入内部组件。",
+      "交易日历候选组件在设计审核前不得进入上游正式资产。"
+    ]
+  },
+  "simulation": {
+    "dataSource": "mock",
+    "scenarios": [
+      { "id": "initialized", "description": "默认已初始化，可完整操作。", "trigger": "直接打开页面", "reset": "刷新页面" },
+      { "id": "uninitialized", "description": "首次进入，通知未配置。", "trigger": "URL 参数 scenario=uninitialized", "reset": "移除参数并刷新" },
+      { "id": "view-only", "description": "只有交易日查询权限。", "trigger": "URL 参数 permission=view", "reset": "移除参数并刷新" },
+      { "id": "upload-errors", "description": "上传文件名包含 format、content 或 incomplete 时进入稳定错误态。", "trigger": "上传对应模拟文件", "reset": "关闭并重新打开上传抽屉" }
+    ],
+    "persistence": "memory"
+  },
+  "questions": [
+    { "id": "TC-Q01", "question": "PRD 内 Figma 链接是否作为本轮视觉依据？", "blocking": false, "status": "resolved", "resolution": "否；本轮按用户最新决定，以飞书信息结构参考和 SensD 规则为准。", "sourceRefs": ["SRC-DECISION"] },
+    { "id": "TC-Q02", "question": "本轮是否覆盖完整 SDH/SA 业务集成？", "blocking": false, "status": "resolved", "resolution": "否；先验证 SBP 日历管理的组件缺口。", "sourceRefs": ["SRC-DECISION"] },
+    { "id": "TC-Q03", "question": "交易日历在产品信息架构中处于哪一层？", "blocking": true, "status": "resolved", "resolution": "平台管理→项目管理→基本设置→通用分组→交易日历入口卡片→下钻页；下钻后侧导航仍选中基本设置。", "sourceRefs": ["SRC-STRUCTURE"] }
+  ],
+  "acceptanceCriteria": [
+    { "id": "TC-A01", "requirementRefs": ["TC-R02", "TC-R03", "TC-R04"], "description": "月/年视图、月份导航、今天和月份跳转均可实际操作。" },
+    { "id": "TC-A02", "requirementRefs": ["TC-R06", "TC-R07"], "description": "未初始化门禁和完成通知配置后的解锁形成闭环。" },
+    { "id": "TC-A03", "requirementRefs": ["TC-R08", "TC-R09", "TC-R10"], "description": "单日和批量编辑可校验、确认、保存并回显。" },
+    { "id": "TC-A04", "requirementRefs": ["TC-R11"], "description": "批量上传的错误与成功状态可重复触发。" },
+    { "id": "TC-A05", "requirementRefs": ["TC-R05", "TC-R13", "TC-R14"], "description": "三档桌面宽度通过，24px 留白不压缩，源码通过 Sens 与 Token 审计。" },
+    { "id": "TC-A06", "requirementRefs": ["TC-R01", "TC-R15"], "description": "侧导航不展示交易日历项；从基本设置的交易日历卡片可进入下钻页，并可通过返回、面包屑及浏览器历史回到上级。" },
+    { "id": "TC-A07", "requirementRefs": ["TC-R16"], "description": "落地页与下钻页的侧导航、10px 顶角、0/16px 标题内容间距、白色通栏背景和满高规则均通过浏览器计算样式检查。" },
+    { "id": "TC-A08", "requirementRefs": ["TC-R02", "TC-R03", "TC-R04", "TC-R05", "TC-R17"], "description": "月视图在 1280、1440、1920 三档桌面宽度保持 64px 工具栏、七列等高网格、真实五或六周行数和可辨识状态；年视图展示十二个月并保持四列结构。" },
+    { "id": "TC-A09", "requirementRefs": ["TC-R08", "TC-R09", "TC-R10", "TC-R11", "TC-R18"], "description": "四个业务抽屉在 1280、1440、1920 三档宽度遵守正式小/中尺寸和 16/24px 内容内边距；上传提醒符合 info Alert 规则，上传区标题为 14/22、辅助文案为 12/18；通知抽屉的标题、标签、值和正式 Alert 正文统一为 14/22；历史日期二次确认正确锚定保存按钮且使用小按钮。上传文件框因 SensD 正式组件缺失，单独记录为 TC-S03 候选，不纳入视觉通过结论。" }
+  ],
+  "review": {
+    "requirement": { "status": "pass", "evidence": ["prototype:npm run test:review:24 passed,24 planned skips,0 failed", "prototype/tests/prototype-review.spec.ts:P1 month visual passed at desktop-1280/1440/1920", "prototype/tests/prototype-review.spec.ts:P1 year visual passed at desktop-1440", "prototype/tests/prototype-review.spec.ts:P1-2 drawer visual passed at desktop-1280/1440/1920", "prototype/tests/prototype-review.spec.ts:upload info Alert, upload 14/12 hierarchy and notification Alert passed at desktop-1440"], "notes": "基本设置入口下钻与返回、月/年视图、时间导航、初始化门禁、单日/批量编辑、批量上传和通知配置的主闭环均通过；上传提醒与文字层级已按 Figma 修正。上传文件框的交互仍可验证，但视觉因正式 SensD 组件缺失不计为通过。" },
+    "sens": { "status": "pass", "evidence": ["prototype:npm run check:assets pass:3 template refs and 3 composite refs", "prototype:npm run check:sens 14/14 pass", "prototype:npm run build pass", "@sens/prototype-kit@0.1.0-p0.8 exports SensEntryCard and SensAlert"], "notes": "页面消费正式 SensEntryCard、SensSectionTitle、SensAlert、Product Shell、侧导航、SensButton、SensDrawer、SensForm、SensCheckboxGroup、SensIcon 与 SensPopover；上传与通知通栏信息均使用正式 SensAlert。固定包暂无 File Upload / Upload Dragger，已登记 TC-S03 候选，当前上传框不得被当作正式 Sens 资产。" },
+    "interaction": { "status": "pass", "evidence": ["prototype:npm run test:review:24 passed,24 planned skips,0 failed"], "notes": "月年切换、月份导航、入口下钻与返回、编辑、上传、通知配置、轻量二次确认及浏览器历史均通过 Playwright 回归。" },
+    "delivery": { "status": "pass", "evidence": ["prototype:npm run build pass", "prototype/dist", "prototype/package-lock.json:portable"], "notes": "类型检查和生产构建通过；已启动本地 HTTP 预览，未经授权不公开发布。" },
+    "reviewerMode": "self_review",
+    "designStatus": "awaiting_designer",
+    "designerDecision": null,
+    "artifactRevision": "p1-2-upload-alert-typography-2026-09-24"
+  },
+  "delivery": {
+    "projectPath": "examples/trading-calendar/prototype",
+    "staticBundlePath": "examples/trading-calendar/prototype/dist",
+    "previewUrl": null,
+    "publication": "not_published"
+  }
+}

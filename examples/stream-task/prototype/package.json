@@ -1,0 +1,26 @@
+{
+  "name": "sens-stream-task-prototype",
+  "private": true,
+  "version": "0.1.0-p1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5177 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4177 --strictPort",
+    "check:sens": "node scripts/check-sens-usage.mjs",
+    "test:review": "playwright test",
+    "review": "npm run check:sens && npm run build && npm run test:review"
+  },
+  "dependencies": {
+    "@sens/prototype-kit": "file:../../../vendor/sens-prototype-kit-0.1.0-p0.6.tgz",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.4.5",
+    "vite": "5.4.21"
+  }
+}
