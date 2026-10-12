@@ -15,6 +15,8 @@ description: 检查 Sens PM 原型的需求覆盖、设计系统复用、交互�
 
 ### 需求
 
+- 规格非 `intake` 时，Phase A readiness 必须通过：页面边界、入口返回、核心状态和主流程已确认，无开放阻塞问题和阻塞性推断。
+- `actors`、`coreTasks`、`informationArchitecture.nodes`、`flows` 与 `acceptanceCriteria` 必须互相可追溯，引用的页面、状态、interaction、requirement、question 和 source 必须真实存在。
 - 页面、流程、限制、文案和状态可追溯到 requirement 或已确认回答。
 - 改动区域和保留区域没有相互污染。
 - PRD、局部 Figma、截图和 Sens 之间的冲突已记录。

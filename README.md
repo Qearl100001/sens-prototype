@@ -62,7 +62,7 @@ PM 在生成前必须明确页面层级：所属产品、侧导航路径、落�
 
 ## 规格与需求产物
 
-`contracts/prototype-spec.schema.json` 使用 JSON Schema 2020-12。版本为 `0.1.0`，范围包含需求、来源、页面状态、交互、校验、Sens匹配、问题和审核。
+`contracts/prototype-spec.schema.json` 使用 JSON Schema 2020-12。版本为 `0.2.0`，范围包含需求、来源、用户与核心任务、逐页信息架构、页面状态、主/异常流程、交互、校验、Sens 匹配、问题、Phase A 确认记录和审核。
 
 建议每个需求保存：
 
@@ -75,7 +75,7 @@ feature/
   export/              后续工具生成的静态包
 ```
 
-规格可先处于 `intake`，Sens版本和组件映射尚未确定时不能进入 `ready`。Schema只验证结构，不能证明业务正确、组件真实存在或原型通过视觉验收。
+规格可先处于 `intake`。页面边界、入口与返回、核心状态、主流程未确认，存在未解决阻塞问题，或 Sens 版本与组件映射尚未确定时，不能进入 `ready`。使用 `npm run check:specs` 同时执行 Schema 和跨字段 readiness 检查。Schema 与自动检查仍不能代替业务正确性判断、资产真实性检查或设计师视觉验收。
 
 ## 当前 Sens 接入状态
 

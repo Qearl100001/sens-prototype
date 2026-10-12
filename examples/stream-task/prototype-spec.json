@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "id": "stream-task",
   "title": "同步任务-流任务",
   "stage": "checked",
@@ -110,6 +110,45 @@
       "真实数据预览服务、P5 快捷筛选和列目设置。",
       "上游 sens-preview 组件或规则修改。",
       "国际化文案实现、真实文件下载和真实外部数据连接详情页。"
+    ]
+  },
+  "actors": [
+    {
+      "id": "actor-sync-admin",
+      "name": "数据同步任务管理员",
+      "goal": "创建、查看、运行、暂停、编辑和复制流任务。",
+      "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"]
+    }
+  ],
+  "coreTasks": [
+    {
+      "id": "task-create-stream-task",
+      "description": "配置来源、Schema、目标、字段映射、执行规则和报警后创建流任务。",
+      "actorRefs": ["actor-sync-admin"],
+      "pageRefs": ["page-list", "page-create", "page-data-preview", "page-detail"],
+      "requirementRefs": ["req-list-entry", "req-create-layout", "req-basic-info", "req-source-linkage", "req-target-mapping", "req-execution", "req-alarm", "req-submit-state"],
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "task-manage-stream-task",
+      "description": "从列表查看任务，按状态运行、暂停、编辑、复制或删除。",
+      "actorRefs": ["actor-sync-admin"],
+      "pageRefs": ["page-list", "page-detail", "page-edit", "page-copy"],
+      "requirementRefs": ["req-list-status", "req-list-actions", "req-detail", "req-edit", "req-copy"],
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    }
+  ],
+  "informationArchitecture": {
+    "product": "数据接入",
+    "sideNavigationPath": ["数据同步", "同步任务"],
+    "nodes": [
+      { "pageId": "page-list", "pageLevel": "landing", "entryPoint": "side_navigation", "parentPageId": null, "entryLabel": "同步任务", "returnTargetPageId": null, "deepLinkPolicy": "直接访问时保留数据同步侧导航上下文。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"] },
+      { "pageId": "page-create", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-list", "entryLabel": "创建任务", "returnTargetPageId": "page-list", "deepLinkPolicy": "直接访问创建页时保留同步任务上下文和返回列表能力。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence", "source-p1b-confirmation"] },
+      { "pageId": "page-detail", "pageLevel": "drilldown", "entryPoint": "table", "parentPageId": "page-list", "entryLabel": "查看", "returnTargetPageId": "page-list", "deepLinkPolicy": "任务详情深链保留返回流任务列表的路径。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      { "pageId": "page-edit", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-detail", "entryLabel": "编辑", "returnTargetPageId": "page-detail", "deepLinkPolicy": "仅允许从可编辑任务进入，保存后返回详情。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      { "pageId": "page-copy", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-list", "entryLabel": "复制", "returnTargetPageId": "page-detail", "deepLinkPolicy": "复制从来源任务进入，保存后进入新任务详情。", "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"] },
+      { "pageId": "page-run-records", "pageLevel": "drilldown", "entryPoint": "table", "parentPageId": "page-list", "entryLabel": "运行记录", "returnTargetPageId": "page-list", "deepLinkPolicy": "本期仅保留入口，不实现完整页面。", "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"] },
+      { "pageId": "page-data-preview", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-create", "entryLabel": "数据预览", "returnTargetPageId": "page-create", "deepLinkPolicy": "数据预览仅从创建页打开，关闭后返回当前配置。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"] }
     ]
   },
   "requirements": [
@@ -297,7 +336,10 @@
       "id": "req-copy",
       "description": "复制页回显原任务全部配置且均可修改；保存后由系统生成新的任务 ID。",
       "basis": "inferred",
-      "sourceRefs": ["source-prd-v3"]
+      "category": "flow",
+      "readinessImpact": "non_blocking",
+      "questionRefs": ["question-task-id"],
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
     },
     {
       "id": "req-access-boundary",
@@ -391,7 +433,7 @@
     {
       "id": "interaction-open-create",
       "pageId": "page-list",
-      "fromState": "list-empty_or_loaded",
+      "fromState": "list-loaded",
       "trigger": "点击创建任务",
       "toState": "create-initial",
       "effect": "在当前页面上下文进入创建同步任务。",
@@ -436,7 +478,7 @@
     {
       "id": "interaction-consume-position",
       "pageId": "page-create",
-      "fromState": "create-mapping_or_standard-json",
+      "fromState": "create-mapping",
       "trigger": "切换首次消费起始",
       "toState": "create-dirty",
       "effect": "时间戳或特定偏移量选项显示对应数值输入。",
@@ -537,7 +579,7 @@
       "pageId": "page-list",
       "fromState": "list-delete-confirm",
       "trigger": "确认删除已暂停任务",
-      "toState": "list-loaded_or_empty",
+      "toState": "list-loaded",
       "effect": "移除任务并显示删除成功反馈。",
       "requirementRefs": ["req-list-actions"]
     },
@@ -549,6 +591,38 @@
       "toState": "preview-ready",
       "effect": "打开抽屉，加载后展示三条模拟数据；preview=empty 稳定触发空态。",
       "requirementRefs": ["req-data-preview"]
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-create-stream-task",
+      "name": "创建流任务",
+      "kind": "main",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-list",
+      "interactionRefs": ["interaction-open-create", "interaction-source-linkage", "interaction-normal-mapping", "interaction-data-preview", "interaction-consume-position", "interaction-alarm-toggle", "interaction-submit-success"],
+      "outcome": "完成配置并创建等待运行的流任务。",
+      "sourceRefs": ["source-prd-v3", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "flow-manage-stream-task",
+      "name": "管理流任务生命周期",
+      "kind": "main",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-list",
+      "interactionRefs": ["interaction-run", "interaction-pause", "interaction-edit-save", "interaction-copy-save", "interaction-delete"],
+      "outcome": "任务按状态被运行、暂停、编辑、复制或删除。",
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    },
+    {
+      "id": "flow-create-exceptions",
+      "name": "创建、配额与返回异常",
+      "kind": "exception",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-create",
+      "interactionRefs": ["interaction-source-exception", "interaction-submit-invalid", "interaction-submit-failure", "interaction-abandon", "interaction-run-blocked"],
+      "outcome": "无效配置不提交，失败时保留输入，配额不足时阻止运行，放弃时按脏状态处理。",
+      "sourceRefs": ["source-prd-v3", "source-p1b-confirmation"]
     }
   ],
   "validations": [
@@ -898,6 +972,23 @@
       "description": "设计师明确确认当前 blocker / major 已通过后，设计状态标记为 approved；已接受的 minor、Sens 候选和排除范围保留在 designerDecision 与审核记录中。"
     }
   ],
+  "readiness": {
+    "decision": "confirmed",
+    "confirmedBy": "PM scope and design decisions recorded in the prototype sources",
+    "confirmedAt": "2026-09-22",
+    "sourceRefs": ["source-p1-scope-confirmation", "source-user-flow-evidence", "source-p1b-confirmation", "source-designer-detail-spacing-feedback"],
+    "checks": {
+      "pageBoundaries": { "status": "confirmed", "notes": "列表、创建、详情、编辑、复制、运行记录占位和数据预览边界已确认。", "sourceRefs": ["source-p1-scope-confirmation", "source-p1b-confirmation"] },
+      "entryAndReturn": { "status": "confirmed", "notes": "列表入口、创建/详情/编辑/复制与返回关系已确认。", "sourceRefs": ["source-user-flow-evidence", "source-p1b-confirmation"] },
+      "coreStates": { "status": "confirmed", "notes": "任务状态、表单联动、详情、编辑、复制、配额与 Licence 状态已确认。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-p1b-confirmation"] },
+      "mainFlow": { "status": "confirmed", "notes": "创建和任务生命周期主流程已通过验收。", "sourceRefs": ["source-user-flow-evidence", "source-p1b-confirmation"] },
+      "exceptionFlow": { "status": "confirmed", "notes": "来源异常、本地校验、提交失败、放弃和配额阻断已确认。", "sourceRefs": ["source-prd-v3", "source-p1b-confirmation"] },
+      "dataAndContent": { "status": "confirmed", "notes": "来源、Schema、目标、字段映射、执行规则和报警内容已确认。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      "scope": { "status": "confirmed", "notes": "P1 核心闭环、本期接受项、Sens 候选和排除范围已分流。", "sourceRefs": ["source-p1-scope-confirmation", "source-p1b-confirmation"] },
+      "designSystem": { "status": "confirmed", "notes": "使用 p0.6 固定包，资产缺口和业务组合边界已记录。", "sourceRefs": ["source-sens-kit", "source-designer-detail-spacing-feedback"] },
+      "acceptancePlan": { "status": "confirmed", "notes": "十二项验收标准覆盖需求、Sens、交互、视觉和交付。", "sourceRefs": ["source-p1b-confirmation", "source-designer-detail-spacing-feedback"] }
+    }
+  },
   "review": {
     "requirement": {
       "status": "pass",
