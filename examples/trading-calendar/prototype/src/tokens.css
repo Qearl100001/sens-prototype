@@ -1,0 +1,48 @@
+/*
+ * Requirement-level token adapter.
+ * Every value below is copied by token name from the fixed
+ * @sens/prototype-kit@0.1.0-p0.8 tokens.resolved.json and verified by
+ * scripts/check-sens-usage.mjs. Business styles consume only these variables.
+ */
+:root {
+  --sens-token-white: #FFFFFF;
+  --sens-token-text-primary: #171C26E5;
+  --sens-token-text-sub: #08122694;
+  --sens-token-text-disabled: #000D264D;
+  --sens-token-outline: #0015401F;
+  --sens-token-divider-light: #00154014;
+  --sens-token-background-grey: #0022660A;
+  --sens-token-body-background: #F2F7F7;
+  --sens-token-component-primary: #00B280;
+  --sens-token-component-active-background: #EBF7F4;
+  --sens-token-success: #5CB838;
+  --sens-token-success-background: #EDFAE8;
+  --sens-token-info-background: #FFF8E5;
+  --sens-token-warning: #E54545;
+  --sens-token-warning-background: #FCEBEB;
+  --sens-token-spacing-half: 2px;
+  --sens-token-spacing-1x: 4px;
+  --sens-token-spacing-2x: 8px;
+  --sens-token-spacing-3x: 12px;
+  --sens-token-spacing-4x: 16px;
+  --sens-token-spacing-5x: 20px;
+  --sens-token-spacing-6x: 24px;
+  --sens-token-spacing-8x: 32px;
+  --sens-token-spacing-10x: 40px;
+  --sens-token-size-xxl: 48px;
+  --sens-token-control-height-m: 32px;
+  --sens-token-radius-s: 3px;
+  --sens-token-radius-m: 4px;
+  --sens-token-radius-xl: 10px;
+  --sens-token-font-size-s: 12px;
+  --sens-token-font-size-m: 14px;
+  --sens-token-font-size-l: 16px;
+  --sens-token-line-height-s: 18px;
+  --sens-token-line-height-m: 22px;
+  --sens-token-line-height-l: 24px;
+  --sens-token-font-weight-regular: 400;
+  --sens-token-font-weight-medium: 500;
+  --sens-token-font-weight-semibold: 600;
+  --sens-token-divider-width: 1px;
+  --sens-token-active-ring: 0 0 0 2px rgba(0, 178, 128, 0.2);
+}

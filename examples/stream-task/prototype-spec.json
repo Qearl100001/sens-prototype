@@ -1,0 +1,1024 @@
+{
+  "schemaVersion": "0.2.0",
+  "id": "stream-task",
+  "title": "同步任务-流任务",
+  "stage": "checked",
+  "mode": "module",
+  "objective": "验证第二类真实 PRD 能否沿用 Sens 原型工作流，形成流任务从创建、提交、运行、暂停、编辑到再次运行的可评审闭环。",
+  "sources": [
+    {
+      "id": "source-prd-v3",
+      "kind": "prd",
+      "location": "input/stream-task-prd.md",
+      "usage": "业务目标、P0/P1 范围、页面、字段、状态机、校验、配额、权限与兼容要求。"
+    },
+    {
+      "id": "source-sens-kit",
+      "kind": "sens_rule",
+      "location": "../../vendor/sens-prototype-kit-0.1.0-p0.6.tgz#catalog.json",
+      "usage": "固定版本 Sens 公开组件、Product Shell、规则来源与已知限制。"
+    },
+    {
+      "id": "source-figma-side-navigation-groups",
+      "kind": "figma",
+      "location": "https://www.figma.com/design/IBBF40Lst6uPPJf70pi0bh?node-id=18596-105388",
+      "usage": "SensD 产品壳侧导航二级分组默认展开、独立收起/展开、箭头状态和层级间距规则；页面直接复用 ProductShellSideNavigation，不在业务层重写样式或交互。"
+    },
+    {
+      "id": "source-p1-scope-confirmation",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-20-p1-scope-confirmation",
+      "usage": "确认 P1 分阶段推进、首轮核心闭环和首批 intake 规格；锚点方位后续以 Figma 右侧布局为准。"
+    },
+    {
+      "id": "source-figma-stream-task",
+      "kind": "figma",
+      "location": "https://www.figma.com/design/hnP4ZsKaolTW5u4Tof38zV/SDH-1.3.6-%E7%89%88%E6%9C%AC-%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%85%A5?node-id=687-86836",
+      "usage": "13 个用户指定节点的创建、来源联动、报警、详情、编辑状态和 Kafka/Hive 资产。"
+    },
+    {
+      "id": "source-user-flow-evidence",
+      "kind": "user_decision",
+      "location": "user-provided:process-video-and-two-reference-screens",
+      "usage": "确认列表入口、创建页整体布局及来源选择、映射、执行规则和数据预览的操作顺序。"
+    },
+    {
+      "id": "source-p1b-confirmation",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-20-p1b-implementation-confirmation",
+      "usage": "确认按已展示的 P1-B 范围和文件清单实现。"
+    },
+    {
+      "id": "source-designer-layout-actions-feedback",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-21-layout-anchor-table-actions-confirmation",
+      "usage": "确认窄于 1280px 时保持桌面最小宽度与 24px 页面留白、锚点消费 14/22 正式文字规格、表格操作超过三个时收进更多，并在当前页面修正更多箭头与 Hash 字段内容的中心线对齐。"
+    },
+    {
+      "id": "source-figma-small-confirm",
+      "kind": "figma",
+      "location": "https://www.figma.com/design/IBBF40Lst6uPPJf70pi0bh?node-id=6483-34744,6483-34773,6483-34802,6483-34831",
+      "usage": "小型二次确认的上、下、左、右四种展开方向共用 24px 高、12/18 文字、10px 横向内边距、12px 按钮间距和 3px 圆角的小按钮规格。"
+    },
+    {
+      "id": "source-designer-tab-rhythm-feedback",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-21-list-tab-rhythm-confirmation",
+      "usage": "确认列表页正式标题栏保持不变，Tab 行改用 SensD 40px 高度档、正文 14/22 文字规格和垂直居中布局。"
+    },
+    {
+      "id": "source-designer-list-filter-status-feedback",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-21-list-filter-status-confirmation",
+      "usage": "确认任务状态圆点改用 SensD 状态语义色，搜索框恢复 200px 默认宽度，并锁定选择器正文为 14/22。"
+    },
+    {
+      "id": "source-designer-detail-popover-feedback",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-22-detail-popover-major-feedback",
+      "usage": "确认删除确认浮层箭头必须指向更多按钮；详情页正文标题、正文、卡片高度、映射图标、带背景只读输入、右侧锚点和标题栏操作需按 Sens 正式规则修正。"
+    },
+    {
+      "id": "source-designer-detail-spacing-feedback",
+      "kind": "user_decision",
+      "location": "conversation:2026-09-22-detail-spacing-major-feedback",
+      "usage": "确认详情卡片统一使用 16px 内边距；基础信息和执行规则采用单列就近关系，描述与任务状态间距 20px，规则标题与对应内容卡片间距 8px；来源与目标卡片顶对齐；报警圆点使用状态色，状态行、灰色标题和卡片外框左对齐，报警条件拆分为标题列与内容列，状态行到卡片使用 Sens 既有 12px 间距。"
+    }
+  ],
+  "scope": {
+    "change": [
+      "新增流任务列表及配额、状态和任务操作的原型规格。",
+      "新增创建同步任务的单页四区配置流程规格。",
+      "新增任务详情、暂停后编辑和复制任务页面规格。",
+      "定义等待运行、运行中、运行异常、已暂停的任务状态转换。",
+      "定义成功、失败、配额耗尽和权限受限的可重复模拟场景。",
+      "补充桌面最小宽度、页面留白、右侧锚点文字和表格操作收纳规则。",
+      "补充表格更多箭头与 Hash 字段内容的中心线对齐规则。",
+      "补充小型二次确认的小按钮规格、列表 Tab 通栏分割线及 40px Tab 垂直节奏。",
+      "补充列表任务状态色、200px 搜索框和 14/22 选择器文字规格。",
+      "补充删除确认浮层与实际触发按钮的锚定规则，以及详情页正文层级、只读输入、映射图标、右侧锚点和标题栏操作规则。",
+      "恢复 SensD 侧边导航基础组件的二级分组展开/收起能力，保持当前四组默认展开。"
+    ],
+    "preserve": [
+      "使用固定版本 @sens/prototype-kit，不引用相邻 sens-preview 源码。",
+      "保持 Sens Product Shell 的顶导、侧导、标题栏和内容滚动结构。",
+      "设计审核状态仅依据设计师明确决定更新，不以 Agent 自查替代签字。"
+    ],
+    "excluded": [
+      "真实 Kafka、Schema、任务调度、权限、Licence 和操作日志服务。",
+      "运行记录页面的完整内容与运行日志详情。",
+      "真实数据预览服务、P5 快捷筛选和列目设置。",
+      "上游 sens-preview 组件或规则修改。",
+      "国际化文案实现、真实文件下载和真实外部数据连接详情页。"
+    ]
+  },
+  "actors": [
+    {
+      "id": "actor-sync-admin",
+      "name": "数据同步任务管理员",
+      "goal": "创建、查看、运行、暂停、编辑和复制流任务。",
+      "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"]
+    }
+  ],
+  "coreTasks": [
+    {
+      "id": "task-create-stream-task",
+      "description": "配置来源、Schema、目标、字段映射、执行规则和报警后创建流任务。",
+      "actorRefs": ["actor-sync-admin"],
+      "pageRefs": ["page-list", "page-create", "page-data-preview", "page-detail"],
+      "requirementRefs": ["req-list-entry", "req-create-layout", "req-basic-info", "req-source-linkage", "req-target-mapping", "req-execution", "req-alarm", "req-submit-state"],
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "task-manage-stream-task",
+      "description": "从列表查看任务，按状态运行、暂停、编辑、复制或删除。",
+      "actorRefs": ["actor-sync-admin"],
+      "pageRefs": ["page-list", "page-detail", "page-edit", "page-copy"],
+      "requirementRefs": ["req-list-status", "req-list-actions", "req-detail", "req-edit", "req-copy"],
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    }
+  ],
+  "informationArchitecture": {
+    "product": "数据接入",
+    "sideNavigationPath": ["数据同步", "同步任务"],
+    "nodes": [
+      { "pageId": "page-list", "pageLevel": "landing", "entryPoint": "side_navigation", "parentPageId": null, "entryLabel": "同步任务", "returnTargetPageId": null, "deepLinkPolicy": "直接访问时保留数据同步侧导航上下文。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"] },
+      { "pageId": "page-create", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-list", "entryLabel": "创建任务", "returnTargetPageId": "page-list", "deepLinkPolicy": "直接访问创建页时保留同步任务上下文和返回列表能力。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence", "source-p1b-confirmation"] },
+      { "pageId": "page-detail", "pageLevel": "drilldown", "entryPoint": "table", "parentPageId": "page-list", "entryLabel": "查看", "returnTargetPageId": "page-list", "deepLinkPolicy": "任务详情深链保留返回流任务列表的路径。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      { "pageId": "page-edit", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-detail", "entryLabel": "编辑", "returnTargetPageId": "page-detail", "deepLinkPolicy": "仅允许从可编辑任务进入，保存后返回详情。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      { "pageId": "page-copy", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-list", "entryLabel": "复制", "returnTargetPageId": "page-detail", "deepLinkPolicy": "复制从来源任务进入，保存后进入新任务详情。", "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"] },
+      { "pageId": "page-run-records", "pageLevel": "drilldown", "entryPoint": "table", "parentPageId": "page-list", "entryLabel": "运行记录", "returnTargetPageId": "page-list", "deepLinkPolicy": "本期仅保留入口，不实现完整页面。", "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"] },
+      { "pageId": "page-data-preview", "pageLevel": "drilldown", "entryPoint": "action", "parentPageId": "page-create", "entryLabel": "数据预览", "returnTargetPageId": "page-create", "deepLinkPolicy": "数据预览仅从创建页打开，关闭后返回当前配置。", "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"] }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "req-list-entry",
+      "description": "数据同步页面提供流任务 Tab 和创建任务入口；无数据时展示可引导创建的空态。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-side-navigation-groups",
+      "description": "列表页直接使用 SensD ProductShellSideNavigation 的二级分组能力；四个分组默认展开并显示组件内置箭头，点击分组标题可独立收起或展开子项，不在业务层关闭或重写该交互。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-figma-side-navigation-groups", "source-sens-kit"]
+    },
+    {
+      "id": "req-list-quota",
+      "description": "列表显示总条数及运行中数量与总配额，默认总配额为 3；配额用尽时运行操作禁用并提示原因。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-list-status",
+      "description": "任务支持等待运行、运行中、运行中异常和已暂停状态；列表默认按任务 ID 降序展示；状态圆点依次使用 SensD processing、success、warning 和 invalid 语义色。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-prd-v3", "source-designer-list-filter-status-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-list-filter-style",
+      "description": "列表搜索使用 Sens Search 默认 200px 固定宽度；任务状态选择器文字使用正文 14px 字号和 22px 行高。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-list-filter-status-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-list-actions",
+      "description": "列表支持查看、运行或暂停、编辑、复制和删除；运行中禁止编辑与删除，已暂停允许编辑与删除。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-list-action-overflow",
+      "description": "表格操作列最多展示查看、运行或暂停和更多三个入口；编辑、复制和删除收进更多，删除不在操作列外部单独展示。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-layout-actions-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-list-tab-divider",
+      "description": "列表页 Tab 下方的分割线贯穿整个标题区，并延伸到右侧 Schema 配置和创建任务按钮下方。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-layout-actions-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-list-tab-rhythm",
+      "description": "列表页保持正式 Sens 标题栏；其下 Tab 使用 40px 高度档、14px 字号、22px 行高和垂直居中布局，不叠加额外顶部内边距。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-tab-rhythm-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-small-confirm-actions",
+      "description": "size=small 的二次确认使用 Sens 小按钮；当前列表删除确认与表单放弃确认的操作按钮为 24px 高、12px 字号。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-figma-small-confirm", "source-sens-kit"]
+    },
+    {
+      "id": "req-delete-confirm-anchor",
+      "description": "列表删除确认 Popover 的定位触发区域与更多按钮完全重合，浮层箭头指向更多按钮的视觉中心线。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-detail-popover-feedback", "source-figma-small-confirm", "source-sens-kit"]
+    },
+    {
+      "id": "req-local-alignment",
+      "description": "表格操作列的更多文字与箭头保持同一视觉中心线；Hash 字段标题、标签和添加链接保持同一中心线。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-layout-actions-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-desktop-min-width",
+      "description": "浏览器窄于 1280px 时保留 1280px 桌面页面结构并由横向滚动承接，列表、创建和详情页左右留白保持 24px，不随视口压缩。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-layout-actions-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-create-layout",
+      "description": "创建页采用单页纵向表单与右侧四项锚点导航，包含任务基础信息、数据来源和目标、任务执行规则、报警监控。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "req-create-anchor-typography",
+      "description": "创建页右侧锚点保持桌面右栏布局，文字消费 Sens 14px / 22px 正文规格；默认 regular，选中项使用强调字重与品牌色。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-layout-actions-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-basic-info",
+      "description": "任务名称必填、最多 100 个字符且仅支持字母、数字、下划线和中文；描述最多 200 个字符。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-source-linkage",
+      "description": "来源连接仅展示消息队列类型；选择正常连接后解禁并过滤来源数据，半结构化来源进一步显示并过滤 Schema。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-source-exception",
+      "description": "异常来源连接显示错误反馈与查看详情入口，并保持来源数据禁用。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-target-mapping",
+      "description": "目标类型默认实体，目标数据可选择用户表、事件表或明细表；非神策标准 JSON 来源需要配置字段映射。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-standard-json",
+      "description": "神策标准 JSON 来源显示标识，并提示无需配置同步目标和字段映射。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-execution",
+      "description": "任务长期有效、长期执行；首次消费起始支持最早、最新、时间戳和特定偏移量，读取逻辑固定为追加更新。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-write-partition",
+      "description": "写入逻辑随目标表类型只读展示；分区规则支持按并行度绑定或按有序字段 hash。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-exception-advanced",
+      "description": "用户可选择是否跳过异常数据；高级设置包含并行度、优化参数和允许在强校验下创建事件或属性。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-alarm",
+      "description": "报警默认开启；可分别配置重启次数和跳过异常数据次数两类条件，关闭时隐藏配置。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-p1b-confirmation"]
+    },
+    {
+      "id": "req-data-preview",
+      "description": "选定来源数据和 Schema 后可打开数据预览抽屉，展示加载、无数据或模拟数据状态。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-figma-stream-task", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "req-submit-state",
+      "description": "提交时选择不立即运行则进入等待运行；运行和暂停必须由用户明确操作，编辑保存后同样回到等待运行。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-abandon",
+      "description": "创建页存在已填写内容时返回需要放弃确认；没有填写内容时直接返回列表。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-detail",
+      "description": "详情页回显基础信息、数据来源和目标、执行规则及字段映射；异常任务显示吸顶异常提示。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-detail-visual-rules",
+      "description": "详情页大灰标题下的字段标题使用 Sens 14/22 主要文字色正文标题，字段值使用 14/22 主要文字色正文；内容卡片统一使用 16px 内边距，基础信息和执行规则采用单列就近关系，描述与任务状态间距 20px，执行频率/分区规则与对应内容卡片间距 8px；来源与目标卡片高度随内容自适应且顶对齐；报警圆点使用 Sens 状态成功色，状态行、灰色标题和卡片外框左对齐，状态行到卡片间距 12px，报警条件采用标题列与内容列；字段映射使用正式映射图标和带背景只读输入；右侧保留四项锚点，运行记录、复制和编辑位于页面标题栏。",
+      "basis": "confirmed",
+      "sourceRefs": ["source-designer-detail-popover-feedback", "source-designer-detail-spacing-feedback", "source-sens-kit"]
+    },
+    {
+      "id": "req-edit",
+      "description": "已暂停任务可编辑规定字段，来源、目标、首次消费起始、读取和写入逻辑及通知方式保持只读；保存后不自动运行。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3"]
+    },
+    {
+      "id": "req-copy",
+      "description": "复制页回显原任务全部配置且均可修改；保存后由系统生成新的任务 ID。",
+      "basis": "inferred",
+      "category": "flow",
+      "readinessImpact": "non_blocking",
+      "questionRefs": ["question-task-id"],
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    },
+    {
+      "id": "req-access-boundary",
+      "description": "Licence 控制流任务入口可见性；查看权限和管理权限影响操作可用性，但原型仅模拟界面状态。",
+      "basis": "explicit",
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    }
+  ],
+  "pages": [
+    {
+      "id": "page-list",
+      "name": "同步任务-流任务列表",
+      "regions": ["Product Shell", "页面标题与创建任务操作", "批任务与流任务切换", "检索与筛选", "条数与配额信息", "任务表格或空态"],
+      "states": [
+        {"id": "list-empty", "description": "无流任务，展示创建引导。"},
+        {"id": "list-loaded", "description": "展示等待运行、运行中、异常和已暂停的模拟任务。"},
+        {"id": "list-filtered", "description": "按任务 ID 或名称检索后的结果。"},
+        {"id": "list-quota-full", "description": "运行中任务达到 3 条，运行操作禁用。"},
+        {"id": "list-delete-confirm", "description": "已暂停任务触发删除二次确认。"},
+        {"id": "list-feedback", "description": "创建、编辑、复制或删除后的页面级反馈。"}
+      ]
+    },
+    {
+      "id": "page-create",
+      "name": "创建同步任务",
+      "regions": ["返回与页面标题", "右侧四项锚点导航", "任务基础信息", "数据来源和目标", "字段映射", "任务执行规则", "高级设置", "报警监控", "页面顶部操作"],
+      "states": [
+        {"id": "create-initial", "description": "所有业务字段为空或为默认值，依赖项禁用。"},
+        {"id": "create-dirty", "description": "已有用户输入，返回时需要放弃确认。"},
+        {"id": "create-source-ready", "description": "来源连接和来源数据已选择，Schema 与目标配置按类型联动。"},
+        {"id": "create-standard-json", "description": "神策标准 JSON 来源，免目标和字段映射。"},
+        {"id": "create-mapping", "description": "普通半结构化来源，需要配置目标和字段映射。"},
+        {"id": "create-invalid", "description": "本地校验失败并在字段附近显示反馈。"},
+        {"id": "create-submitting", "description": "提交中，阻止重复操作。"},
+        {"id": "create-submit-failed", "description": "可重复触发的模拟提交失败。"},
+        {"id": "create-abandon-confirm", "description": "存在已填内容时显示放弃确认。"}
+      ]
+    },
+    {
+      "id": "page-detail",
+      "name": "查看流任务",
+      "regions": ["页面标题与顶部操作", "详情锚点导航", "配置只读回显", "异常提示区域"],
+      "states": [
+        {"id": "detail-normal", "description": "正常任务配置只读回显。"},
+        {"id": "detail-abnormal", "description": "异常任务显示异常原因及导出日志入口。"},
+        {"id": "detail-running", "description": "运行中任务编辑不可用。"},
+        {"id": "detail-paused", "description": "已暂停任务允许进入编辑。"}
+      ]
+    },
+    {
+      "id": "page-edit",
+      "name": "编辑流任务",
+      "regions": ["页面标题", "可编辑配置", "只读配置", "Schema 变更提示", "保存操作"],
+      "states": [
+        {"id": "edit-paused", "description": "已暂停任务按字段权限编辑。"},
+        {"id": "edit-schema-changed", "description": "进入页面时展示最新 Schema 的变更与影响。"},
+        {"id": "edit-saving", "description": "保存处理中。"},
+        {"id": "edit-failed", "description": "可重复触发的模拟保存失败。"}
+      ]
+    },
+    {
+      "id": "page-copy",
+      "name": "复制流任务",
+      "regions": ["页面标题", "完整可编辑配置", "保存操作"],
+      "states": [
+        {"id": "copy-ready", "description": "回显来源任务配置且全部字段可修改。"},
+        {"id": "copy-saving", "description": "复制保存处理中。"},
+        {"id": "copy-failed", "description": "可重复触发的模拟复制失败。"}
+      ]
+    },
+    {
+      "id": "page-run-records",
+      "name": "运行记录",
+      "regions": ["页面入口占位"],
+      "states": [
+        {"id": "run-records-blocked", "description": "PRD 缺少内容规格，首轮不实现完整页面。"}
+      ]
+    },
+    {
+      "id": "page-data-preview",
+      "name": "来源数据预览抽屉",
+      "regions": ["来源摘要", "刷新操作", "预览数据表或空态"],
+      "states": [
+        {"id": "preview-loading", "description": "正在获取来源数据。"},
+        {"id": "preview-ready", "description": "展示可重复的模拟预览数据。"},
+        {"id": "preview-empty", "description": "未选 Schema 或空结果场景。"}
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction-open-create",
+      "pageId": "page-list",
+      "fromState": "list-loaded",
+      "trigger": "点击创建任务",
+      "toState": "create-initial",
+      "effect": "在当前页面上下文进入创建同步任务。",
+      "requirementRefs": ["req-list-entry", "req-create-layout"]
+    },
+    {
+      "id": "interaction-source-linkage",
+      "pageId": "page-create",
+      "fromState": "create-initial",
+      "trigger": "选择正常的消息队列来源连接和来源数据",
+      "toState": "create-source-ready",
+      "effect": "依次解禁来源数据、Schema、目标与后续配置。",
+      "requirementRefs": ["req-source-linkage"]
+    },
+    {
+      "id": "interaction-source-exception",
+      "pageId": "page-create",
+      "fromState": "create-initial",
+      "trigger": "选择异常来源连接",
+      "toState": "create-invalid",
+      "effect": "连接字段报错并提供查看详情入口，来源数据保持禁用。",
+      "requirementRefs": ["req-source-exception"]
+    },
+    {
+      "id": "interaction-standard-json",
+      "pageId": "page-create",
+      "fromState": "create-source-ready",
+      "trigger": "选择神策标准 JSON 来源",
+      "toState": "create-standard-json",
+      "effect": "显示格式标识及免目标、免字段映射说明。",
+      "requirementRefs": ["req-standard-json"]
+    },
+    {
+      "id": "interaction-normal-mapping",
+      "pageId": "page-create",
+      "fromState": "create-source-ready",
+      "trigger": "选择非神策标准 JSON 的半结构化来源",
+      "toState": "create-mapping",
+      "effect": "显示目标表和字段映射配置。",
+      "requirementRefs": ["req-target-mapping"]
+    },
+    {
+      "id": "interaction-consume-position",
+      "pageId": "page-create",
+      "fromState": "create-mapping",
+      "trigger": "切换首次消费起始",
+      "toState": "create-dirty",
+      "effect": "时间戳或特定偏移量选项显示对应数值输入。",
+      "requirementRefs": ["req-execution"]
+    },
+    {
+      "id": "interaction-alarm-toggle",
+      "pageId": "page-create",
+      "fromState": "create-dirty",
+      "trigger": "切换开启报警",
+      "toState": "create-dirty",
+      "effect": "显示或隐藏报警条件和通知方式。",
+      "requirementRefs": ["req-alarm"]
+    },
+    {
+      "id": "interaction-submit-invalid",
+      "pageId": "page-create",
+      "fromState": "create-dirty",
+      "trigger": "必填或条件字段不合法时点击提交",
+      "toState": "create-invalid",
+      "effect": "阻止提交并显示字段级反馈。",
+      "requirementRefs": ["req-basic-info", "req-execution", "req-alarm"]
+    },
+    {
+      "id": "interaction-submit-success",
+      "pageId": "page-create",
+      "fromState": "create-dirty",
+      "trigger": "合法配置选择不立即运行并提交成功",
+      "toState": "list-loaded",
+      "effect": "创建系统生成 ID 的等待运行任务并显示创建成功反馈。",
+      "requirementRefs": ["req-submit-state"]
+    },
+    {
+      "id": "interaction-submit-failure",
+      "pageId": "page-create",
+      "fromState": "create-submitting",
+      "trigger": "命中模拟失败场景",
+      "toState": "create-submit-failed",
+      "effect": "保留表单数据并显示失败反馈，允许重试。",
+      "requirementRefs": ["req-submit-state"]
+    },
+    {
+      "id": "interaction-abandon",
+      "pageId": "page-create",
+      "fromState": "create-dirty",
+      "trigger": "点击返回",
+      "toState": "create-abandon-confirm",
+      "effect": "选择确定放弃后清除本次输入并返回列表；继续创建则关闭确认。",
+      "requirementRefs": ["req-abandon"]
+    },
+    {
+      "id": "interaction-run",
+      "pageId": "page-list",
+      "fromState": "list-loaded",
+      "trigger": "未满配额时点击等待运行任务的运行",
+      "toState": "list-loaded",
+      "effect": "任务变为运行中，运行中计数增加。",
+      "requirementRefs": ["req-list-quota", "req-list-status", "req-submit-state"]
+    },
+    {
+      "id": "interaction-run-blocked",
+      "pageId": "page-list",
+      "fromState": "list-quota-full",
+      "trigger": "悬停或尝试操作运行",
+      "toState": "list-quota-full",
+      "effect": "保持禁用并提示无可用配额。",
+      "requirementRefs": ["req-list-quota"]
+    },
+    {
+      "id": "interaction-pause",
+      "pageId": "page-list",
+      "fromState": "list-loaded",
+      "trigger": "点击运行中任务的暂停",
+      "toState": "list-loaded",
+      "effect": "任务变为已暂停，运行中计数减少并解禁编辑与删除。",
+      "requirementRefs": ["req-list-status", "req-list-actions"]
+    },
+    {
+      "id": "interaction-edit-save",
+      "pageId": "page-edit",
+      "fromState": "edit-paused",
+      "trigger": "修改允许编辑的配置并保存成功",
+      "toState": "list-loaded",
+      "effect": "更新配置，任务进入等待运行并显示编辑成功反馈。",
+      "requirementRefs": ["req-edit", "req-submit-state"]
+    },
+    {
+      "id": "interaction-copy-save",
+      "pageId": "page-copy",
+      "fromState": "copy-ready",
+      "trigger": "修改配置并保存成功",
+      "toState": "list-loaded",
+      "effect": "生成新任务 ID 和等待运行任务，显示复制成功反馈。",
+      "requirementRefs": ["req-copy"]
+    },
+    {
+      "id": "interaction-delete",
+      "pageId": "page-list",
+      "fromState": "list-delete-confirm",
+      "trigger": "确认删除已暂停任务",
+      "toState": "list-loaded",
+      "effect": "移除任务并显示删除成功反馈。",
+      "requirementRefs": ["req-list-actions"]
+    },
+    {
+      "id": "interaction-data-preview",
+      "pageId": "page-data-preview",
+      "fromState": "preview-loading",
+      "trigger": "在创建页选定 Schema 后点击数据预览",
+      "toState": "preview-ready",
+      "effect": "打开抽屉，加载后展示三条模拟数据；preview=empty 稳定触发空态。",
+      "requirementRefs": ["req-data-preview"]
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-create-stream-task",
+      "name": "创建流任务",
+      "kind": "main",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-list",
+      "interactionRefs": ["interaction-open-create", "interaction-source-linkage", "interaction-normal-mapping", "interaction-data-preview", "interaction-consume-position", "interaction-alarm-toggle", "interaction-submit-success"],
+      "outcome": "完成配置并创建等待运行的流任务。",
+      "sourceRefs": ["source-prd-v3", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "flow-manage-stream-task",
+      "name": "管理流任务生命周期",
+      "kind": "main",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-list",
+      "interactionRefs": ["interaction-run", "interaction-pause", "interaction-edit-save", "interaction-copy-save", "interaction-delete"],
+      "outcome": "任务按状态被运行、暂停、编辑、复制或删除。",
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    },
+    {
+      "id": "flow-create-exceptions",
+      "name": "创建、配额与返回异常",
+      "kind": "exception",
+      "actorRefs": ["actor-sync-admin"],
+      "entryPageId": "page-create",
+      "interactionRefs": ["interaction-source-exception", "interaction-submit-invalid", "interaction-submit-failure", "interaction-abandon", "interaction-run-blocked"],
+      "outcome": "无效配置不提交，失败时保留输入，配额不足时阻止运行，放弃时按脏状态处理。",
+      "sourceRefs": ["source-prd-v3", "source-p1b-confirmation"]
+    }
+  ],
+  "validations": [
+    {
+      "id": "validation-name-required",
+      "pageId": "page-create",
+      "field": "任务名称",
+      "rule": "去除首尾空白后不能为空。",
+      "timing": "清空、离开字段或提交时",
+      "feedback": "任务名称不可为空",
+      "requirementRefs": ["req-basic-info"]
+    },
+    {
+      "id": "validation-name-length",
+      "pageId": "page-create",
+      "field": "任务名称",
+      "rule": "最多 100 个字符。",
+      "timing": "输入或提交时",
+      "feedback": "任务名称不能超过 100 个字符",
+      "requirementRefs": ["req-basic-info"]
+    },
+    {
+      "id": "validation-name-characters",
+      "pageId": "page-create",
+      "field": "任务名称",
+      "rule": "仅支持字母、数字、下划线和中文。",
+      "timing": "输入或提交时",
+      "feedback": "默认仅支持字母、数字、下划线、中文，不支持其他字符",
+      "requirementRefs": ["req-basic-info"]
+    },
+    {
+      "id": "validation-description-length",
+      "pageId": "page-create",
+      "field": "描述",
+      "rule": "最多输入 200 个字符，超出后禁止继续输入。",
+      "timing": "输入时",
+      "feedback": "达到上限后不再接受新字符",
+      "requirementRefs": ["req-basic-info"]
+    },
+    {
+      "id": "validation-timestamp",
+      "pageId": "page-create",
+      "field": "目标时间戳",
+      "rule": "选择时间戳消费起始时必填且只能输入非负整数。",
+      "timing": "提交时",
+      "feedback": "请输入时间戳",
+      "requirementRefs": ["req-execution"]
+    },
+    {
+      "id": "validation-offset",
+      "pageId": "page-create",
+      "field": "偏移量",
+      "rule": "选择特定偏移量消费起始时必填且只能输入非负整数。",
+      "timing": "提交时",
+      "feedback": "请输入偏移量",
+      "requirementRefs": ["req-execution"]
+    },
+    {
+      "id": "validation-parallelism",
+      "pageId": "page-create",
+      "field": "并行度",
+      "rule": "仅允许 1 至 128 的整数。",
+      "timing": "输入和失焦时",
+      "feedback": "请依据资源性能合理配置，范围 1-128",
+      "requirementRefs": ["req-exception-advanced"]
+    },
+    {
+      "id": "validation-alarm-window",
+      "pageId": "page-create",
+      "field": "近 M 分钟",
+      "rule": "报警开启时必填且仅允许非负整数。",
+      "timing": "提交时",
+      "feedback": "请输入",
+      "requirementRefs": ["req-alarm"]
+    },
+    {
+      "id": "validation-alarm-retries",
+      "pageId": "page-create",
+      "field": "重启次数 N",
+      "rule": "报警开启时必填且仅允许非负整数。",
+      "timing": "提交时",
+      "feedback": "请输入",
+      "requirementRefs": ["req-alarm"]
+    }
+  ],
+  "designSystem": {
+    "name": "Sens",
+    "version": "0.1.0-p0.6",
+    "status": "available",
+    "assetLocation": "../../vendor/sens-prototype-kit-0.1.0-p0.6.tgz",
+    "mappings": [
+      {
+        "pageId": "page-list",
+        "region": "产品页面框架",
+        "kind": "layout",
+        "exportName": "SensProductShell",
+        "variant": "t",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-list",
+        "region": "列表、配额信息和操作区",
+        "kind": "component",
+        "exportName": "TableShell",
+        "variant": "TableInfoBar and TableActions",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-list",
+        "region": "无数据状态",
+        "kind": "component",
+        "exportName": "SensEmptyState",
+        "variant": "non-page base",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "基础信息和配置表单",
+        "kind": "component",
+        "exportName": "SensForm",
+        "variant": "vertical business form",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "文本、数字和多行输入",
+        "kind": "component",
+        "exportName": "SensInput",
+        "variant": "SensInput, SensInputNumber and SensTextArea",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "来源、Schema、目标和字段选择",
+        "kind": "component",
+        "exportName": "SensSelectDropdown",
+        "variant": "single select with disabled and error states",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "消费起始、分区和是否跳过异常",
+        "kind": "component",
+        "exportName": "SensRadioGroup",
+        "variant": "mutually exclusive",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "报警开关与通知方式",
+        "kind": "component",
+        "exportName": "SensCheckbox",
+        "variant": "checkbox and checkbox group",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      },
+      {
+        "pageId": "page-create",
+        "region": "页面级操作反馈",
+        "kind": "component",
+        "exportName": "useSensMessage",
+        "variant": "success, warning and loading",
+        "ruleSourceRefs": ["source-sens-kit"],
+        "status": "verified"
+      }
+    ],
+    "gaps": [
+      "固定资产包未登记 Tabs、Modal、Alert、状态 Tag 和日期范围选择器。",
+      "TableShell 提供表格外壳，但完整业务表头、筛选器、状态单元格和操作列组合仍需原型层组装。",
+      "未登记单页四区锚点导航或步骤导航组件。",
+      "固定版本 SensDropdownButton 仍存在 inline baseline 问题；当前原型仅在表格操作列内对 Sens 图标容器做局部居中，不修改上游资产且不使用 .ant-* 覆盖。",
+      "未登记 Hash 字段有序拖拽组件。",
+      "运行记录和运行日志缺少完整页面规格，本轮仅保留入口和说明反馈。",
+      "长表格页面表头唯一吸顶模式尚未由当前 Product Shell 导出。"
+    ]
+  },
+  "simulation": {
+    "dataSource": "mock",
+    "scenarios": [
+      {
+        "id": "scenario-main-loop",
+        "description": "创建后等待运行，运行、暂停、编辑保存、再次运行的核心闭环。",
+        "trigger": "使用默认模拟数据完成合法表单并依次操作。",
+        "reset": "刷新页面或使用原型重置入口。"
+      },
+      {
+        "id": "scenario-standard-json",
+        "description": "选择神策标准 JSON 来源后跳过目标与字段映射。",
+        "trigger": "选择带标准 JSON 标识的来源数据。",
+        "reset": "切换到普通半结构化来源数据。"
+      },
+      {
+        "id": "scenario-source-error",
+        "description": "来源连接异常并阻断后续来源配置。",
+        "trigger": "选择预设异常 Kafka 连接。",
+        "reset": "选择正常 Kafka 连接。"
+      },
+      {
+        "id": "scenario-submit-failure",
+        "description": "创建或保存失败，保留数据并允许重试。",
+        "trigger": "通过稳定查询参数或原型场景开关触发 failure。",
+        "reset": "移除失败参数或切回 success。"
+      },
+      {
+        "id": "scenario-quota-full",
+        "description": "运行中任务数达到 3，运行操作被配额阻断。",
+        "trigger": "启用配额已满场景或将三个模拟任务设为运行中。",
+        "reset": "暂停任一运行中任务或重置场景。"
+      },
+      {
+        "id": "scenario-abnormal",
+        "description": "运行中任务显示异常状态与导出日志入口。",
+        "trigger": "选择预设异常任务。",
+        "reset": "切回普通列表场景。"
+      },
+      {
+        "id": "scenario-view-only",
+        "description": "只有查看权限时管理操作不可用。",
+        "trigger": "启用 view-only 场景。",
+        "reset": "切回 manage 权限场景。"
+      },
+      {
+        "id": "scenario-license-off",
+        "description": "Licence 未开启时流任务入口不可见。",
+        "trigger": "启用 license-off 场景。",
+        "reset": "切回 license-on 场景。"
+      }
+    ],
+    "persistence": "memory"
+  },
+  "questions": [
+    {
+      "id": "question-batch-baseline",
+      "question": "能否提供 PRD 多次引用的批任务现有页面、关联规格、截图或录屏，以确认同批逻辑和保留区域？",
+      "blocking": true,
+      "status": "resolved",
+      "resolution": "用户提供了列表和创建页参考截图及完整操作录屏，作为保留区域和操作顺序证据。",
+      "sourceRefs": ["source-prd-v3", "source-user-flow-evidence"]
+    },
+    {
+      "id": "question-design-source",
+      "question": "创建页、详情页和异常提示所引用的设计稿是否存在可读取链接或导出图？",
+      "blocking": true,
+      "status": "resolved",
+      "resolution": "已获得并读取用户指定的 13 个 Figma 节点。",
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task"]
+    },
+    {
+      "id": "question-submit-details",
+      "question": "PRD 的提交章节仅写同批逻辑；最终提交按钮、立即运行选择位置、成功后的跳转和服务端失败文案需要来源确认。",
+      "blocking": true,
+      "status": "resolved",
+      "resolution": "Figma 与录屏确认提交、数据预览和成功转详情；服务端失败使用 submitResult=failure 可重复模拟。",
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-user-flow-evidence", "source-p1b-confirmation"]
+    },
+    {
+      "id": "question-standard-json-target",
+      "question": "神策标准 JSON 所谓无需配置同步目标和字段映射，是否连目标数据也完全隐藏或只读自动确定？",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "按 Figma 与用户确认，目标保持禁用的自动确定状态，并隐藏字段映射配置。",
+      "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-p1b-confirmation"]
+    },
+    {
+      "id": "question-run-records",
+      "question": "运行记录页面的表头、状态、筛选和操作规则未提供，首轮按已确认范围只保留入口。",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "P1 首轮不实现完整运行记录页面。",
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    },
+    {
+      "id": "question-task-id",
+      "question": "列表文案同时出现任务 ID 由用户配置和创建后生成，首轮如何处理？",
+      "blocking": false,
+      "status": "resolved",
+      "resolution": "依据复制任务会生成新 ID 的描述，首轮按系统在提交成功后生成任务 ID 处理，并标记为推断。",
+      "sourceRefs": ["source-prd-v3", "source-p1-scope-confirmation"]
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "accept-list",
+      "requirementRefs": ["req-list-entry", "req-side-navigation-groups", "req-list-quota", "req-list-status", "req-list-filter-style", "req-list-actions"],
+      "description": "列表能展示空态和完整状态样本；侧边导航四个二级分组默认展开并可独立收起/展开；状态圆点使用正式语义色，搜索和选择器符合 Sens 筛选规格，配额数字、操作可用性与任务状态一致。"
+    },
+    {
+      "id": "accept-create-navigation",
+      "requirementRefs": ["req-create-layout", "req-create-anchor-typography"],
+      "description": "右侧四项锚点使用 Sens 14/22 正文规格，能定位相应配置区，滚动和已填数据不会因切换定位而丢失。"
+    },
+    {
+      "id": "accept-source-linkage",
+      "requirementRefs": ["req-source-linkage", "req-source-exception", "req-standard-json", "req-target-mapping"],
+      "description": "来源连接、来源数据、Schema、目标和字段映射按来源类型及异常状态正确联动。"
+    },
+    {
+      "id": "accept-validations",
+      "requirementRefs": ["req-basic-info", "req-execution", "req-alarm"],
+      "description": "名称、时间戳、偏移量、并行度和报警参数的本地约束可真实触发并阻止无效提交。"
+    },
+    {
+      "id": "accept-main-loop",
+      "requirementRefs": ["req-submit-state", "req-edit"],
+      "description": "创建、等待运行、运行、暂停、编辑保存、等待运行和再次运行形成可重复闭环。"
+    },
+    {
+      "id": "accept-quota",
+      "requirementRefs": ["req-list-quota", "req-submit-state"],
+      "description": "配额已满时列表运行和提交时立即运行均被阻断，并显示一致原因。"
+    },
+    {
+      "id": "accept-abandon",
+      "requirementRefs": ["req-abandon", "req-small-confirm-actions"],
+      "description": "空表单返回不弹确认，脏表单返回触发放弃确认，继续创建和确定放弃均可实际操作，小型确认的两个操作均使用 Sens 小按钮。"
+    },
+    {
+      "id": "accept-actions",
+      "requirementRefs": ["req-list-actions", "req-list-action-overflow", "req-list-tab-divider", "req-list-tab-rhythm", "req-small-confirm-actions", "req-delete-confirm-anchor", "req-local-alignment", "req-detail", "req-detail-visual-rules", "req-copy"],
+      "description": "运行中、已暂停和异常任务的查看、编辑、复制、删除、暂停或运行操作与状态规则一致；操作列只平铺两个业务操作和更多，其余动作进入更多菜单；删除确认使用 Sens 小按钮且箭头指向更多按钮；详情页正文层级、16px 卡片内边距、单列就近间距、顶对齐、状态色、只读输入、映射图标、锚点和标题栏操作符合已确认规则。"
+    },
+    {
+      "id": "accept-feedback",
+      "requirementRefs": ["req-submit-state", "req-edit", "req-copy"],
+      "description": "创建、编辑、复制和删除提供成功反馈；创建与保存失败可重复触发、保留输入且允许重试。"
+    },
+    {
+      "id": "accept-sens",
+      "requirementRefs": ["req-create-layout", "req-list-entry"],
+      "description": "业务代码仅从 @sens/prototype-kit 消费登记能力，不直接导入 antd、不复制 Sens 组件源码。"
+    },
+    {
+      "id": "accept-delivery",
+      "requirementRefs": ["req-list-entry", "req-list-tab-divider", "req-list-tab-rhythm", "req-desktop-min-width"],
+      "description": "类型检查、生产构建、三档桌面宽度、Tab 的 40px 垂直节奏与通栏分割线、窄于 1280px 的横向滚动与 24px 页面留白，以及关键路径浏览器检查具有实际证据，未运行项不标通过。"
+    },
+    {
+      "id": "accept-design-status",
+      "requirementRefs": ["req-create-layout"],
+      "description": "设计师明确确认当前 blocker / major 已通过后，设计状态标记为 approved；已接受的 minor、Sens 候选和排除范围保留在 designerDecision 与审核记录中。"
+    }
+  ],
+  "readiness": {
+    "decision": "confirmed",
+    "confirmedBy": "PM scope and design decisions recorded in the prototype sources",
+    "confirmedAt": "2026-09-22",
+    "sourceRefs": ["source-p1-scope-confirmation", "source-user-flow-evidence", "source-p1b-confirmation", "source-designer-detail-spacing-feedback"],
+    "checks": {
+      "pageBoundaries": { "status": "confirmed", "notes": "列表、创建、详情、编辑、复制、运行记录占位和数据预览边界已确认。", "sourceRefs": ["source-p1-scope-confirmation", "source-p1b-confirmation"] },
+      "entryAndReturn": { "status": "confirmed", "notes": "列表入口、创建/详情/编辑/复制与返回关系已确认。", "sourceRefs": ["source-user-flow-evidence", "source-p1b-confirmation"] },
+      "coreStates": { "status": "confirmed", "notes": "任务状态、表单联动、详情、编辑、复制、配额与 Licence 状态已确认。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task", "source-p1b-confirmation"] },
+      "mainFlow": { "status": "confirmed", "notes": "创建和任务生命周期主流程已通过验收。", "sourceRefs": ["source-user-flow-evidence", "source-p1b-confirmation"] },
+      "exceptionFlow": { "status": "confirmed", "notes": "来源异常、本地校验、提交失败、放弃和配额阻断已确认。", "sourceRefs": ["source-prd-v3", "source-p1b-confirmation"] },
+      "dataAndContent": { "status": "confirmed", "notes": "来源、Schema、目标、字段映射、执行规则和报警内容已确认。", "sourceRefs": ["source-prd-v3", "source-figma-stream-task"] },
+      "scope": { "status": "confirmed", "notes": "P1 核心闭环、本期接受项、Sens 候选和排除范围已分流。", "sourceRefs": ["source-p1-scope-confirmation", "source-p1b-confirmation"] },
+      "designSystem": { "status": "confirmed", "notes": "使用 p0.6 固定包，资产缺口和业务组合边界已记录。", "sourceRefs": ["source-sens-kit", "source-designer-detail-spacing-feedback"] },
+      "acceptancePlan": { "status": "confirmed", "notes": "十二项验收标准覆盖需求、Sens、交互、视觉和交付。", "sourceRefs": ["source-p1b-confirmation", "source-designer-detail-spacing-feedback"] }
+    }
+  },
+  "review": {
+    "requirement": {
+      "status": "pass",
+      "evidence": ["prototype/tests/prototype-review.spec.ts#core-flow-and-closed-blockers", "prototype-spec.json#requirements", "acceptance/2026-09-22-p1-closeout.md"],
+      "notes": "核心流程及已识别 blocker / major 已完成修复；列表、创建、预览、详情、编辑、复制、字段映射、配额、Licence 和返回路径均有自动验收证据，运行记录仍按范围仅保留入口。"
+    },
+    "sens": {
+      "status": "pass",
+      "evidence": ["prototype/scripts/check-sens-usage.mjs:9/9 pass", "prototype/package.json:@sens/prototype-kit 0.1.0-p0.6"],
+      "notes": "业务源码仅从固定版本 Sens 入口消费组件，未直接引入 antd；Figma 资产保存为本地相对路径。"
+    },
+    "interaction": {
+      "status": "pass",
+      "evidence": ["prototype/tests/prototype-review.spec.ts:21 passed, 36 intentionally skipped, 0 failed across configured desktop projects"],
+      "notes": "1440 下主闭环、初始依赖态、字段映射、标准 JSON、编辑后等待运行、校验/放弃/失败、权限、配额、Licence、操作收纳、非核心入口禁用、删除确认定位/关闭/焦点恢复、详情页正式文字和只读规则以及视觉规则场景通过；三档目标桌面宽度无整页横向溢出和运行时错误。"
+    },
+    "delivery": {
+      "status": "pass",
+      "evidence": ["prototype:npm run build pass", "prototype/package-lock.json:portable", "prototype/dist", "acceptance/screenshots/2026-09-22:9 reviewed 1440x900 screenshots"],
+      "notes": "类型检查和生产构建通过；删除确认、创建后详情、详情报警和侧导航分组收起截图已按最终修复重新生成并检查；未经用户授权发布，因此 previewUrl 保持为 null。"
+    },
+    "reviewerMode": "self_review",
+    "designStatus": "approved",
+    "designerDecision": "approved_with_followups：ST-P1-M02 与 ST-P1-A01~A03 保持 accepted；ST-P1-S01~S05 进入 Sens 候选队列；ST-P1-X01~X05 保持 excluded。",
+    "artifactRevision": "p1-approved-2026-09-22"
+  },
+  "delivery": {
+    "projectPath": "examples/stream-task/prototype",
+    "staticBundlePath": "examples/stream-task/prototype/dist",
+    "previewUrl": null,
+    "publication": "not_published"
+  }
+}

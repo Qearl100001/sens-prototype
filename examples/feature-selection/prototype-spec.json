@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "id": "feature-selection",
   "title": "P0-4 实体筛选特征模板创建页与特征值单选/多选试点",
   "stage": "checked",
@@ -35,6 +35,12 @@
       "kind": "screen_recording",
       "location": "外部资料：测试 创建模版.mov（不随仓库分发）",
       "usage": "作为添加特征、保存加载、添加特征值、放弃确认、区间或离散设置、行内结果与悬停操作的现有产品行为基准。"
+    },
+    {
+      "id": "decision-p0-6-scope",
+      "kind": "user_decision",
+      "location": "acceptance/2026-09-20-p0-6b.md and prior scope confirmations",
+      "usage": "回溯登记已确认的试点页面边界、主流程、失败场景、排除范围和验收计划。"
     }
   ],
   "scope": {
@@ -57,6 +63,40 @@
       "新增特征组",
       "新增黑名单范围",
       "真实保存服务"
+    ]
+  },
+  "actors": [
+    {
+      "id": "actor-template-operator",
+      "name": "实体筛选模板配置人员",
+      "goal": "完成特征选择、特征值配置并提交可用模板。",
+      "sourceRefs": ["prd-1", "recording-1"]
+    }
+  ],
+  "coreTasks": [
+    {
+      "id": "task-configure-template",
+      "description": "选择特征、配置特征值选择方式并提交模板。",
+      "actorRefs": ["actor-template-operator"],
+      "pageRefs": ["template"],
+      "requirementRefs": ["r1", "r2", "r3", "r4", "r6", "r7", "r8", "r9"],
+      "sourceRefs": ["prd-1", "recording-1", "decision-p0-6-scope"]
+    }
+  ],
+  "informationArchitecture": {
+    "product": "数据治理",
+    "sideNavigationPath": [],
+    "nodes": [
+      {
+        "pageId": "template",
+        "pageLevel": "drilldown",
+        "entryPoint": "direct_link",
+        "parentPageId": null,
+        "entryLabel": "创建模板",
+        "returnTargetPageId": null,
+        "deepLinkPolicy": "原型作为单页下钻流程直接访问；返回或放弃按已确认的重置流程处理。",
+        "sourceRefs": ["screenshots-1", "recording-1", "decision-p0-6-scope"]
+      }
     ]
   },
   "requirements": [
@@ -116,14 +156,20 @@
     {
       "id": "r8",
       "description": "页面提交必须展示加载过程和明确结果；默认模拟创建成功，使用 submitResult=failure 查询参数可重复验证创建失败。",
-      "basis": "assumed",
-      "sourceRefs": ["sens-1"]
+      "basis": "confirmed",
+      "category": "flow",
+      "readinessImpact": "blocking",
+      "questionRefs": [],
+      "sourceRefs": ["sens-1", "decision-p0-6-scope"]
     },
     {
       "id": "r9",
       "description": "页面返回或放弃必须二次确认；确认后重置当前创建内容并反馈结果。当前试点不支持的新增特征组和黑名单操作必须禁用，不得保留静默按钮。",
-      "basis": "assumed",
-      "sourceRefs": ["sens-1"]
+      "basis": "confirmed",
+      "category": "flow",
+      "readinessImpact": "blocking",
+      "questionRefs": [],
+      "sourceRefs": ["sens-1", "decision-p0-6-scope"]
     }
   ],
   "pages": [
@@ -256,6 +302,28 @@
       "toState": "abandoned",
       "effect": "重置表单和已选特征，显示“已放弃本次创建”轻提示。",
       "requirementRefs": ["r9"]
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-configure-and-submit",
+      "name": "配置并提交模板",
+      "kind": "main",
+      "actorRefs": ["actor-template-operator"],
+      "entryPageId": "template",
+      "interactionRefs": ["switch", "confirm", "save", "select-no", "submit-success"],
+      "outcome": "特征值单选规则被保存，应用态互斥且提交成功。",
+      "sourceRefs": ["prd-1", "recording-1", "decision-p0-6-scope"]
+    },
+    {
+      "id": "flow-submit-or-abandon-exception",
+      "name": "提交失败或放弃",
+      "kind": "exception",
+      "actorRefs": ["actor-template-operator"],
+      "entryPageId": "template",
+      "interactionRefs": ["cancel", "submit-failure", "abandon-template"],
+      "outcome": "失败时保留内容；确认放弃时重置本次创建。",
+      "sourceRefs": ["decision-p0-6-scope"]
     }
   ],
   "validations": [],
@@ -401,6 +469,23 @@
       "description": "页面返回和放弃均出现确认；确认后内容重置。新增特征组和黑名单范围保持禁用，不存在静默可点击按钮。"
     }
   ],
+  "readiness": {
+    "decision": "confirmed",
+    "confirmedBy": "PM scope decisions and P0-6 acceptance record",
+    "confirmedAt": "2026-09-20",
+    "sourceRefs": ["decision-p0-6-scope"],
+    "checks": {
+      "pageBoundaries": { "status": "confirmed", "notes": "单页创建模板范围和排除项已确认。", "sourceRefs": ["decision-p0-6-scope"] },
+      "entryAndReturn": { "status": "confirmed", "notes": "无侧导航下钻页及返回/放弃处理已确认。", "sourceRefs": ["screenshots-1", "decision-p0-6-scope"] },
+      "coreStates": { "status": "confirmed", "notes": "多选、单选确认、保存、成功、失败与放弃状态已确认。", "sourceRefs": ["prd-1", "decision-p0-6-scope"] },
+      "mainFlow": { "status": "confirmed", "notes": "特征选择到提交的主流程已通过验收。", "sourceRefs": ["recording-1", "decision-p0-6-scope"] },
+      "exceptionFlow": { "status": "confirmed", "notes": "放弃确认和可重复提交失败已确认。", "sourceRefs": ["decision-p0-6-scope"] },
+      "dataAndContent": { "status": "confirmed", "notes": "原型使用代表性模拟数据，不声称真实后端结果。", "sourceRefs": ["recording-1", "decision-p0-6-scope"] },
+      "scope": { "status": "confirmed", "notes": "改动、保留和排除范围已记录。", "sourceRefs": ["decision-p0-6-scope"] },
+      "designSystem": { "status": "confirmed", "notes": "使用 p0.6 固定包，Tree/Transfer 缺口已记录。", "sourceRefs": ["sens-1", "decision-p0-6-scope"] },
+      "acceptancePlan": { "status": "confirmed", "notes": "八项验收标准与 P0-6 门禁已确认。", "sourceRefs": ["decision-p0-6-scope"] }
+    }
+  },
   "review": {
     "requirement": {
       "status": "pass",

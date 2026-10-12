@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "properties": {
     "schemaVersion": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "id": {
       "type": "string",
@@ -73,6 +73,17 @@
         "excluded"
       ]
     },
+    "actors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/actor" }
+    },
+    "coreTasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/coreTask" }
+    },
+    "informationArchitecture": {
+      "$ref": "#/$defs/informationArchitecture"
+    },
     "requirements": {
       "type": "array",
       "items": {
@@ -90,6 +101,10 @@
       "items": {
         "$ref": "#/$defs/interaction"
       }
+    },
+    "flows": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/flow" }
     },
     "validations": {
       "type": "array",
@@ -124,6 +139,14 @@
             "null"
           ],
           "minLength": 1
+        },
+        "templateRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetUsage" }
+        },
+        "compositeRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetUsage" }
         },
         "mappings": {
           "type": "array",
@@ -277,6 +300,9 @@
         ]
       }
     },
+    "readiness": {
+      "$ref": "#/$defs/readiness"
+    },
     "review": {
       "type": "object",
       "additionalProperties": false,
@@ -304,6 +330,7 @@
           "enum": [
             "awaiting_designer",
             "changes_requested",
+            "approved_with_followups",
             "approved"
           ]
         },
@@ -378,18 +405,143 @@
     "objective",
     "sources",
     "scope",
+    "actors",
+    "coreTasks",
+    "informationArchitecture",
     "requirements",
     "pages",
     "interactions",
+    "flows",
     "validations",
     "designSystem",
     "simulation",
     "questions",
     "acceptanceCriteria",
+    "readiness",
     "review",
     "delivery"
   ],
   "$defs": {
+    "informationArchitecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "PM 确认的产品层级与逐页入口、返回和深链关系。",
+      "properties": {
+        "product": { "type": "string", "minLength": 1 },
+        "sideNavigationPath": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/informationArchitectureNode" }
+        }
+      },
+      "required": ["product", "sideNavigationPath", "nodes"]
+    },
+    "informationArchitectureNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pageId": { "type": "string", "minLength": 1 },
+        "pageLevel": { "enum": ["landing", "drilldown"] },
+        "entryPoint": { "enum": ["side_navigation", "card", "table", "action", "direct_link", "other"] },
+        "parentPageId": { "type": ["string", "null"] },
+        "entryLabel": { "type": "string", "minLength": 1 },
+        "returnTargetPageId": { "type": ["string", "null"] },
+        "deepLinkPolicy": { "type": "string", "minLength": 1 },
+        "sourceRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": ["pageId", "pageLevel", "entryPoint", "parentPageId", "entryLabel", "returnTargetPageId", "deepLinkPolicy", "sourceRefs"]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "goal": { "type": "string", "minLength": 1 },
+        "sourceRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": ["id", "name", "goal", "sourceRefs"]
+    },
+    "coreTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "actorRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "pageRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "requirementRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "sourceRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": ["id", "description", "actorRefs", "pageRefs", "requirementRefs", "sourceRefs"]
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["main", "exception"] },
+        "actorRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "entryPageId": { "type": "string", "minLength": 1 },
+        "interactionRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "outcome": { "type": "string", "minLength": 1 },
+        "sourceRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": ["id", "name", "kind", "actorRefs", "entryPageId", "interactionRefs", "outcome", "sourceRefs"]
+    },
+    "readinessCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pending", "confirmed", "not_applicable"] },
+        "notes": { "type": "string", "minLength": 1 },
+        "sourceRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "required": ["status", "notes", "sourceRefs"]
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decision": { "enum": ["pending", "confirmed"] },
+        "confirmedBy": { "type": ["string", "null"] },
+        "confirmedAt": { "type": ["string", "null"], "description": "ISO 8601 date or date-time from the confirmation record." },
+        "sourceRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pageBoundaries": { "$ref": "#/$defs/readinessCheck" },
+            "entryAndReturn": { "$ref": "#/$defs/readinessCheck" },
+            "coreStates": { "$ref": "#/$defs/readinessCheck" },
+            "mainFlow": { "$ref": "#/$defs/readinessCheck" },
+            "exceptionFlow": { "$ref": "#/$defs/readinessCheck" },
+            "dataAndContent": { "$ref": "#/$defs/readinessCheck" },
+            "scope": { "$ref": "#/$defs/readinessCheck" },
+            "designSystem": { "$ref": "#/$defs/readinessCheck" },
+            "acceptancePlan": { "$ref": "#/$defs/readinessCheck" }
+          },
+          "required": ["pageBoundaries", "entryAndReturn", "coreStates", "mainFlow", "exceptionFlow", "dataAndContent", "scope", "designSystem", "acceptancePlan"]
+        }
+      },
+      "required": ["decision", "confirmedBy", "confirmedAt", "sourceRefs", "checks"]
+    },
+    "assetUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pageId": { "type": "string", "minLength": 1 },
+        "assetId": { "type": "string", "minLength": 1 },
+        "pageLevel": { "enum": ["landing", "drilldown"] },
+        "purpose": { "type": "string", "minLength": 1 }
+      },
+      "required": ["pageId", "assetId", "purpose"]
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,
@@ -402,6 +554,7 @@
           "enum": [
             "prd",
             "screenshot",
+            "screen_recording",
             "figma",
             "sens_rule",
             "user_decision"
@@ -441,6 +594,31 @@
             "confirmed",
             "inferred"
           ]
+        },
+        "category": {
+          "enum": [
+            "business",
+            "data",
+            "content",
+            "scope",
+            "state",
+            "flow",
+            "validation",
+            "design_system"
+          ]
+        },
+        "readinessImpact": {
+          "enum": [
+            "blocking",
+            "non_blocking"
+          ]
+        },
+        "questionRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "sourceRefs": {
           "type": "array",
@@ -749,11 +927,34 @@
           "requirements": {
             "minItems": 1
           },
+          "actors": {
+            "minItems": 1
+          },
+          "coreTasks": {
+            "minItems": 1
+          },
           "pages": {
             "minItems": 1
           },
+          "flows": {
+            "minItems": 1,
+            "contains": {
+              "properties": {
+                "kind": { "const": "main" }
+              },
+              "required": ["kind"]
+            }
+          },
           "acceptanceCriteria": {
             "minItems": 1
+          },
+          "readiness": {
+            "properties": {
+              "decision": { "const": "confirmed" },
+              "confirmedBy": { "type": "string", "minLength": 1 },
+              "confirmedAt": { "type": "string", "minLength": 1 },
+              "sourceRefs": { "minItems": 1 }
+            }
           }
         }
       }
@@ -764,7 +965,10 @@
           "review": {
             "properties": {
               "designStatus": {
-                "const": "approved"
+                "enum": [
+                  "approved",
+                  "approved_with_followups"
+                ]
               }
             }
           }
